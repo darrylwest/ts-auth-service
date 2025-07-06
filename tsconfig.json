@@ -113,5 +113,6 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/__tests__/**/*"]
+  "exclude": ["node_modules", "dist", "src/__tests__/**/*"],
+  "files": ["src/types/express.d.ts"]
 }
