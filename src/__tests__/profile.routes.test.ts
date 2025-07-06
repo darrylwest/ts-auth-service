@@ -14,7 +14,16 @@ jest.mock('firebase-admin', () => ({
   },
   initializeApp: jest.fn(),
 }));
-jest.mock('../config/db');
+const mockUserStore = {
+  get: jest.fn(),
+  set: jest.fn(),
+  clear: jest.fn(),
+  delete: jest.fn(),
+};
+
+jest.mock('../config/db', () => ({
+  userStore: mockUserStore,
+}));
 
 // src/__tests__/profile.routes.test.ts
 
@@ -28,7 +37,7 @@ describe('GET /api/profile', () => {
   // Clear mocks and the in-memory store before each test
   beforeEach(async () => {
     jest.clearAllMocks();
-    await (userStore as jest.Mocked<typeof userStore>).clear();
+    await mockUserStore.clear();
     mockVerifyIdToken.mockReset();
     mockGetUser.mockReset();
   });
@@ -60,7 +69,7 @@ describe('GET /api/profile', () => {
       auth_time: 1234567890,
       firebase: { identities: {}, sign_in_provider: 'custom' },
     });
-    (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(fakeUser);
+    mockUserStore.get.mockResolvedValue(fakeUser);
 
     const response = await request(app).get('/api/profile').set('Authorization', `Bearer ${fakeToken}`);
 
