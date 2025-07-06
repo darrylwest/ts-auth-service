@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        body {
+            background-color: floralwhite;
+            font-size: large;
+            font-family: sans-serif;
+            margin: 50px;
+        }
+
+        div {
+            margin: 5px;
+        }
+
+        pre {
+            padding: 5px;
+            white-space: pre-wrap;
+            word-break: keep-all;
+        }
+
+        button {
+            font-size: large;
+            padding: 12px 20px;
+        }
+
+        input {
+            font-family: monospace;
+        }
+
+        textarea {
+            font-family: monospace;
+        }
+
+        .decrypted {
+            background-color: palegreen;
+            border: 2px dotted forestgreen;
+        }
+
+        img.decrypted {
+            padding: 12px 20px;
+        }
+
+        a.decrypted {
+            font-size: xx-large;
+        }
+
+        input.password_input {
+            font-size: large;
+            padding: 12px 20px;
+        }
+    </style>
+    <script>
+        // Display the encryption inputs on the page (invoked during body onload)
+        async function loadValues() {
+            // document.getElementById("secret_type").innerHTML = secretType
+            document.getElementById("salt").setAttribute("value", saltHex)
+            document.getElementById("iv").setAttribute("value", ivHex)
+            document.getElementById("cipher").innerHTML = cipherHex
+            if (secretType == 'file') {
+                document.getElementById("target_file").innerHTML = `Download file.${secretExt}`
+            }
+        }
+        // Invoked when the 'Decrypt' button is pressed
+        async function decrypt() {
+            try {
+                setMessage("Generating key from password...")
+                // Load salt, convert hex string to byte array
+                let salt = hexStringToBytes(saltHex)
+                if (salt.length != saltSize) {
+                    throw new Error(`Unexpected salt size: ${salt.length}`)
+                }
+                // Load IV, convert hex string to byte array
+                let iv = hexStringToBytes(ivHex)
+                if (iv.length != blockSize) {
+                    throw new Error(`Unexpected IV size: ${iv.length}`)
+                }
+                // Load password, as byte array
+                let password = new TextEncoder().encode(document.getElementById("password").value)
+                if (password.length == 0) {
+                    throw new Error(`Empty password`)
+                }
+                // Wrap password into a Key object, as required by cryptography APIs
+                let passwordKey = await window.crypto.subtle.importKey("raw", // Array of bytes
+                    password, {
+                    name: "PBKDF2"
+                }, // What algorithm uses the key
+                    false, // Cannot be extracted
+                    ["deriveKey"] // What the key is used for
+                )
+                // Derive a key from the password, using PBKDF2
+                let key = await window.crypto.subtle.deriveKey({
+                    name: "PBKDF2", // https://en.wikipedia.org/wiki/PBKDF2
+                    salt: salt,
+                    iterations: iterations,
+                    hash: "SHA-1", // As per standard v2.0
+                }, passwordKey, // Wrapped password
+                    {
+                        name: "AES-GCM", // What algorithm uses the key
+                        length: keySize * 8, // Key bitsize
+                    }, false, // Cannot be extracted
+                    ["decrypt"] // What the derived key is used for
+                )
+                setMessage("Decrypting...")
+                // Load ciphertext, convert hex string to byte array
+                let cipher = hexStringToBytes(cipherHex)
+                // Decrypt with AES-GCM
+                // https://en.wikipedia.org/wiki/Galois/Counter_Mode
+                let decryptedBuffer = await window.crypto.subtle.decrypt({
+                    name: "AES-GCM", // Name of block cipher algorithm
+                    iv: iv, // Initialization vector
+                }, key, // Derived key
+                    cipher // Ciphertext
+                )
+                // Remove padding (added as necessary for block cipher)
+                // https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS#5_and_PKCS#7
+                decrypted = removePadding(new Uint8Array(decryptedBuffer))
+                // Render decrypted payload on the page
+                if (secretType == "message") {
+                    // Decode bytes to UTF-8
+                    plainText = new TextDecoder().decode(decrypted)
+                    // Display the plaintext on the page
+                    document.getElementById("target_text").innerHTML = plainText
+                    document.getElementById("text_output_div").hidden = false
+                } else if (secretType == "image") {
+                    // Transform image to base64 string
+                    b64Data = btoa(decrypted.reduce((data, byte) => data + String.fromCharCode(byte), ''))
+                    // Create 'data' URI
+                    // https://en.wikipedia.org/wiki/Data_URI_scheme
+                    const imageData = `data:image/${secretExt};base64,${b64Data}`
+                    // Display image inline
+                    document.getElementById("target_image").setAttribute("src", imageData)
+                    document.getElementById("image_output_div").hidden = false
+                } else if (secretType == "file") {
+                    // Transform image to base64 string
+                    b64Data = btoa(decrypted.reduce((data, byte) => data + String.fromCharCode(byte), ''))
+                    // Create 'data' URI
+                    // https://en.wikipedia.org/wiki/Data_URI_scheme
+                    const fileData = `data:application/octet-stream;base64,${b64Data}`
+                    // Activate download link
+                    document.getElementById("target_file").setAttribute("href", fileData)
+                    document.getElementById("target_file").setAttribute("download", `file.${secretExt}`)
+                    document.getElementById("file_output_div").hidden = false
+                } else {
+                    throw new Error(`Unknown secret type: ${secretType}`)
+                }
+
+                const tout = 5 * 60 * 1000;
+                const now = new Date();
+                const later = new Date(now.getTime() + tout);
+                const options = {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true
+                };
+                const formattedTime = later.toLocaleString('en-US', options);
+                console.log(formattedTime); // Example: 10:37:23 AM
+
+                setTimeout(function () {
+                    window.location.reload();
+                }, tout); // 5 minutes in milliseconds
+
+                // now hide the password and decrypt button
+                const pw = document.getElementById("password");
+                pw.style.display = "none";
+                const db = document.getElementById("decrypt_button");
+                db.style.display = "none";
+
+                setMessage("Decrypted successfully, page will time out after 5 minutes, at " + formattedTime + "...");
+
+            } catch (err) {
+                // TODO better handle failing promises
+                setMessage(`Decryption failed: ${err}`)
+                return
+            }
+        }
+        // Transform hexadecimal string to Uint8Array
+        function hexStringToBytes(input) {
+            for (var bytes = [], c = 0; c < input.length; c += 2) {
+                bytes.push(parseInt(input.substr(c, 2), 16));
+            }
+            return Uint8Array.from(bytes);
+        }
+        // The cleartext input must be padded to a multiple of the block size
+        // for encryption. This function removes the padding, expected to be
+        // compatible with PKCS#7 described in RFC 5652.
+        // https://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS#5_and_PKCS#7
+        function removePadding(input) {
+            // Last byte is the amount of padding
+            padAmount = input[input.length - 1]
+            unpaddedSize = input.length - padAmount
+            return input.slice(0, unpaddedSize)
+        }
+        // Update page with status of decryption
+        function setMessage(msg) {
+            document.getElementById("errormsg").innerHTML = msg
+        }
+    </script>
+</head>
+
+<body onload="loadValues()">
+    <div>
+        <pre class="hint"></pre>
+    </div>
+    <div>
+        <input type="text" id="password" size="60" placeholder="enter your pass phrase" class="password_input" required>
+    </div>
+    <div>
+        <button id="decrypt_button" type="button" onclick='decrypt()'>Decrypt</button>
+        <span id="errormsg"></span>
+    </div>
+    <div id="text_output_div" hidden>
+        <pre id="target_text" class="decrypted"></pre>
+    </div>
+    <div id="image_output_div" hidden>
+        <img id="target_image" class="decrypted">
+    </div>
+    <div id="file_output_div" hidden>
+        <a id="target_file" class="decrypted">Download</a>
+    </div>
+    <details style="display: none;">
+        <summary>Details</summary> These are decryption inputs, that can be safely transmitted in the clear. Without the
+        correct password, they are useless. <div> Salt: <input type="text" id="salt" value="" readonly>
+        </div>
+        <div> IV: <input type="text" id="iv" value="" readonly>
+        </div>
+        <div> Ciphertext: <br>
+            <textarea rows="8" cols="90" id="cipher" readonly></textarea>
+        </div>
+    </details>
+    <h6>Version: 0.9.21-beta.37</h6>
+</body>
+<script>
+    const secretType = "message"
+const secretExt  = ""
+const saltSize   = 16  // bytes
+const blockSize  = 16 // bytes
+const keySize    = 32   // bytes
+const iterations = 1000000
+const saltHex    = "69772aba2f3600415be9dd5df1f722e2"
+const ivHex      = "a25649ca7c06c6327e5b5536ca7a3ba5"
+const cipherHex  = "45255cfbe74b9c69734e420033fc356672a1eb7c9b7a63f2195d3707bc22f3423c6b374182bf367bd9c19e3f39e21ae2adfe59d4c6c76d33647cffb3b44807b842a30094a8f062620dd58b222967fd35d5e2802212b0d0fe8b337fdbeadd48a611950cecbb5bea51af4f95a5330206e3ea6248eed07785406da1122ac9b6d31bfbaf097da223130bf17ee9a40eb3c4885d368adb5c4ff3c5aa39208daf4d975c59529ff7e79ca41cb8081edc1e82957eed9ea3e7cf4d534d2aaa2bcff2d42d4863382b9e1322b87e5ce2febca4c97869fea4d01ca39f5dcae45b87d4906ef1f84cc84162dfa78a5d35e97a8f7693cc3291d462d71ae5729e0291b35eb9b7da7fd28579b34279f00cc895ee74cd4eb7e727318d173338f94aae887acf07cd374b83647ef34420cac9e443353edef935255a39d2b79e456f14940debc38496f5e7cb7e713f3c0aed9018810d8e59805d78a945cd924659b1321720f39e60582807d8a84ee97bf2f93b688ccd00d7fa9cecf80338105379661d49428a990643100854081d540282e492815677ca547f2585010e851f3689ec6fb4afba50e24a62eb3513c3af4736e0b9d1d64e71ef06eb449b2b4335b96d7c8540848a7964130d5404ef14f6c7238a21641fd8340c02403fdb118f052079559baf4adfa4582bd9fc2f0155880d9613ab7f3c8a22a47a8b26555e4ce89f98a4043fd9b30e923c320681bd3747b8817c3f3c6131cf6dc69d3353e7614a7d130c3acd1e62dc78e7bf850737e75669d9512f7f30943d3f5ad43cbdd0ab2b9cafdd016e4150cc321acc5eebb266433d0eaed9d1a268e33ed41d2597bac9f06e3a5529a3f81f62520dfe209fd65932cd02e20280095cfa5a2439e295034f59da7431b6878fbedb14fdd21c3f1ae483cf2752529d3c9d5a800ff4e0340143e8f87c8d44997279c3a631da3de076711ac7719dfcbf1bd745b90f60e9485ad033db69e3f30bf8a5297e1391e3613b537b82b7da6a1b371e1b13f381e133af5fc85c40b4d5d846af0b68e1519257ab277bb94d9f545c8fa1604085439c155af11cdd2e224675c7e6b18a6e1998c69bc2e76bd52a596a533d18a476b6afb4e4737fc29d1134edd2bdd5a4f02327c8d914348884bcfef717ca6a0813dea3ab4d45304352a6e8084c15035fb5f74bc6ed4e3487549a93fdcebe1b5b84be196f7e85b9f63e2cd62aef5897cc7f3e6a03e0c01d9eb2e9c2ccf64c6ccf4452645369ae6f887aa3e1e2cbf405337cdcfa0243695c390c2dfe8bd677a379876d054ef19c6163c212ce5fad33b1faf953f92e7e325d4252393656d7c2192db8cb0d855e6b2e156b32505b2a72ef90674d82c6784c94f262db1c788c59b96b8abb6135e630e9309cb0b4edfbc4c28f9f54e531f4432f500e6ac2518341db6fa2d774b0c2a51556b73b153307e8c327862b82083a6164acf86f991e1d099b4e6f7db45db0366bc764a445eff903eda3bc6d1e4e45f621a215b8ada866120dd36d2ee4167061f083025c4b2f9734b2d8900497712280594b3fe35e43cc83f101d554d1417542b9239971c3d61023e11643765dd89dda7584e2ee0aebe3d81b9d40eda1fe3f3860f5c03ccd16b964747ab1def109d800d2a060863f2adfd0f7f158bb3b6254724fc5959fb47c53605304419494c9dae7b41de1208cbb505663fcbb949130dfd0e2956cbbfef63279ddba04d62dd847af781217367b953f79a5389cf2c7630eec1aee1ad359e7f6998042738d216ad1bc3d45b81e8e030161c4651884d408b78d3b638ea834b828bc4e94789dbda8e8380204370cea8ad66f472fcd52e42b987daaa4b4df202a56edd4faeb7a47ade08d73f126112ba0b76d6c7507a3be8719bca1b198242fcd9b1109cb6cd2548a4f8c9a0311f13a3f4780ba608d9528f49cbc93380098c1a2b9e10ca08c91b0cb653361a5701e50384d16de601d5b3535fb5dfe242eb574cae9572a1b35db292ce392b097d42e1fca697ae571567de4eb90fbbcf384c7732b6c213f676bfdd005cfc231df62d80f23dbeeb55d68ff6f8973f0290743f331262b29bdd016566010ccae04d56a24ce0856a2aaad2a91a47c0127b3e62fa3384df452aa86b4926108ab73aa70f1cdd1e64fd4f6d0372250a7757bfd3ce8026dc42f5da5f77c0f080ccdf460e5ca5b42066122b9636a64d477a163223919ae609b22228cd7fb150020b885a94bbd36edf7662cf3b8fbbdd377161b6de9fa30acfb80086324ce7c7688d05211422d4fa1e1291b6020bd537c254ddc1fa91381e6d7f75bb4f155982f2b9103bcbd61feb0fc12ee05a6486e02fb62367e82accac311e10e727534f0299b126abab416c50cc616135f17647025fbe733f1a559b7b7fd9299063b16490551993d67483dc8d821d8f90ca39d8bbb389b597e41c2f034dd508d4cb4c7b5d49ec9b617cab7f1fc37a50103f29c7aad3e53e29e87187095bcda96ce861cfd7db5dae05d72584c16536c03784a32f63611cf51aa8550fadb887811657d0ffc5fe6b4d39948c41dda16dc6dead68360a4231778c0571d585f235dbadf3dcdf75fa225564f0fe177b8a200eac381a5e43c4648c9bd97352be673fe49d8297a7f8adfea7ad467d34a55bd393d880da293d2984cfa8373f47b1ac49f1e8d87fd0604c7150008851295044c953727d4fc0f0ec8420f7260dc6517b980a593670ad767e7e0df94d9ca87631c99588967ea54438ae8f18027815d664e9b56adcf8a2b6137053ca3b6dec845ca3df33df23006ff4a689439d7c636d83c0669b9e20b91a1cb285c65cdd83b6319a49d4394570c52ee066f53d5db27d7109c0a84da54a21af081ae5e3e4f393ebfe69740df41797f2c7da8d7c6cc9aa7f69d5f64f8b9a5bc269f23ec6f5bede38ff046a5f9b41fb19d24b584969982c3818ac99e372dc555caff187510cb3248e4185b2fbd8191c591135f0fb182b41f0929250b18176544b1cf492692b398fa9b0fcef540b6896c532ab543739ee456664be85693f0097198b800cc49aa144bbbf5e694aba0db4638795735a95990e03abba42699f0dbac30e8e97a51960c33de3cb0e4e1deccc61fdc2e2ebe2097fb692e8a461faa3f70498c42fb14dd6a823c02425b701d38db4d47946fd87025a7170345b3645836a82252b93583993ce23e36e091b32039f7eede019db21f654376e42a606d1d2f6edb4b8b05fd6dc929fa283db806f83a7013e97ced778087e02f8ab57e717abebf68650077e5aa5adb16c3c4126ab0102d10fe516a29a3fd132f9c83b0551747569e36cbe5d4d4b503c4f5cb3cdf99289d43c7f0e195283dd0523ccd6d5b297fe80d057580efca3c0a72a30ab3991052e76dd9a1796908939f9c6da28186c3ced88003b3611df0d9fa6fec8d936c32e0c5"
+</script>
+
+</html>
