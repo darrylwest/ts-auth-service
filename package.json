@@ -37,7 +37,8 @@
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "keyv": "^5.3.4",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
