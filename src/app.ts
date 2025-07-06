@@ -11,6 +11,7 @@ dotenv.config();
 
 // Initialize Firebase Admin (only once)
 if (!admin.apps.length) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const serviceAccount = require('../../keys/service-account.json');
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
