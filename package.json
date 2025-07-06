@@ -13,8 +13,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\""
@@ -33,11 +31,13 @@
   "homepage": "https://github.com/darrylwest/ts-auth-service#readme",
   "dependencies": {
     "@keyv/redis": "^4.5.0",
+    "@types/winston": "^2.4.4",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
-    "keyv": "^5.3.4"
+    "keyv": "^5.3.4",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

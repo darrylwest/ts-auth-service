@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as admin from 'firebase-admin';
 import { userStore } from '../config/db';
 import { UserProfile } from '../types/models';
+import logger from '../config/logger';
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
@@ -35,7 +36,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     req.user = userProfile;
     next();
   } catch (error) {
-    console.error('Error verifying auth token:', error);
+    logger.error('Error verifying auth token:', error);
     res.status(403).send({ error: 'Forbidden: Invalid token.' });
   }
 }

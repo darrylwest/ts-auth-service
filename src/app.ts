@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import { authMiddleware } from './middleware/auth';
 import { checkRole } from './middleware/roles';
 import { userStore } from './config/db';
-import { UserProfile } from './types/models';
+import logger from './config/logger';
 
 dotenv.config();
 
@@ -62,7 +62,7 @@ app.put('/api/profile', authMiddleware, async (req: Request, res: Response) => {
     await userStore.set(uid, updatedProfile);
     res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
   } catch (error) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error);
     res.status(500).json({ error: 'Failed to update profile.' });
   }
 });
