@@ -20,7 +20,7 @@ jest.mock('../config/db');
 
 import request from 'supertest';
 import app from '../app'; // Import the decoupled express app
-import * as admin from 'firebase-admin';
+// import * as admin from 'firebase-admin';
 import { userStore } from '../config/db';
 import { UserProfile } from '../types/models';
 
