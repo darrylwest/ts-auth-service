@@ -23,15 +23,13 @@ jest.mock('firebase-admin', () => ({
   initializeApp: jest.fn(),
 }));
 // Mock our database module
-const mockUserStore = {
-  get: jest.fn(),
-  set: jest.fn(),
-  clear: jest.fn(),
-  delete: jest.fn(),
-};
-
 jest.mock('../config/db', () => ({
-  userStore: mockUserStore,
+  userStore: {
+    get: jest.fn(),
+    set: jest.fn(),
+    clear: jest.fn(),
+    delete: jest.fn(),
+  },
 }));
 
 describe('Auth Middleware', () => {
@@ -55,7 +53,7 @@ describe('Auth Middleware', () => {
 
   // Clear the in-memory store before each test to ensure isolation
   afterEach(async () => {
-    await mockUserStore.clear();
+    await (userStore as jest.Mocked<typeof userStore>).clear();
   });
 
   it('should call next() and attach user if token is valid and user exists', async () => {
@@ -65,7 +63,7 @@ describe('Auth Middleware', () => {
 
     // Mock the return values
     mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'test@example.com', name: 'Test User' });
-    mockUserStore.get.mockResolvedValue(fakeUser);
+    (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(fakeUser);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
@@ -82,13 +80,13 @@ describe('Auth Middleware', () => {
     mockVerifyIdToken.mockResolvedValue({ uid: '456', email: 'new@test.com', name: 'Newbie' });
     mockGetUser.mockResolvedValue(firebaseUserRecord);
     // Simulate user not found in our DB
-    mockUserStore.get.mockResolvedValue(undefined);
+    (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(undefined);
     // Mock the set function to check if it's called
-    mockUserStore.set.mockResolvedValue(true);
+    (userStore as jest.Mocked<typeof userStore>).set.mockResolvedValue(true);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 
-    expect(mockUserStore.set).toHaveBeenCalled(); // Check that we tried to create a user
+    expect(userStore.set).toHaveBeenCalled(); // Check that we tried to create a user
     expect(mockNext).toHaveBeenCalled();
     expect(mockRequest.user).toBeDefined();
     expect(mockRequest.user?.uid).toBe('456');
