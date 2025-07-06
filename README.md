@@ -9,8 +9,7 @@ Node/Typescript service that uses Firebase for authentication while managing use
 |___|___||_____||____|__|__| |_______||_____|__|  \___/ |__||____|_____|
 ```
 
-
-
+[Implementation Plan](https://aistudio.google.com/app/prompts/1LzX-RFOvT6lvmbSHu1FoiY3bRnD2NFAC)
 
 
 
