@@ -1,6 +1,5 @@
-// src/index.ts
-import app from './app';
 
+import app from './app';
 
 // --- SERVER START ---
 const PORT = process.env.PORT || 3001;

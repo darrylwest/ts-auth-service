@@ -5,7 +5,6 @@ import cors from 'cors';
 import * as admin from 'firebase-admin';
 import { authMiddleware } from './middleware/auth';
 
-import { authMiddleware } from './middleware/auth';
 import { checkRole } from './middleware/roles';
 import { userStore } from './config/db';
 import { UserProfile } from './types/models';
