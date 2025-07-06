@@ -1,4 +1,3 @@
-// src/__tests__/auth.middleware.test.ts
 import { Request, Response, NextFunction } from 'express';
 import { authMiddleware } from '../middleware/auth';
 import * as admin from 'firebase-admin';
@@ -7,12 +6,24 @@ import { UserProfile } from '../types/models';
 
 // ---- MOCKING ----
 // Mock the entire firebase-admin module
-jest.mock('firebase-admin');
+const mockVerifyIdToken = jest.fn();
+const mockGetUser = jest.fn();
+
+jest.mock('firebase-admin', () => ({
+  apps: {
+    length: 1,
+  },
+  auth: () => ({
+    verifyIdToken: mockVerifyIdToken,
+    getUser: mockGetUser,
+  }),
+  credential: {
+    cert: jest.fn(),
+  },
+  initializeApp: jest.fn(),
+}));
 // Mock our database module
 jest.mock('../config/db');
-
-// Create a type-safe mock for the admin SDK
-const mockedAdmin = admin as jest.Mocked<typeof admin>;
 
 describe('Auth Middleware', () => {
   let mockRequest: Partial<Request>;
@@ -29,6 +40,8 @@ describe('Auth Middleware', () => {
       status: jest.fn().mockReturnThis(),
       send: jest.fn(),
     };
+    (admin.auth().verifyIdToken as jest.Mock).mockReset();
+    (admin.auth().getUser as jest.Mock).mockReset();
   });
 
   // Clear the in-memory store before each test to ensure isolation
@@ -42,10 +55,7 @@ describe('Auth Middleware', () => {
     mockRequest.headers = { authorization: `Bearer ${fakeToken}` };
 
     // Mock the return values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockedAdmin.auth as any).mockReturnValue({
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: '123' }),
-    });
+    mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'test@example.com', name: 'Test User' });
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(fakeUser);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
@@ -60,11 +70,8 @@ describe('Auth Middleware', () => {
     const firebaseUserRecord = { uid: '456', email: 'new@test.com', displayName: 'Newbie' };
     mockRequest.headers = { authorization: `Bearer ${fakeToken}` };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockedAdmin.auth as any).mockReturnValue({
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: '456' }),
-      getUser: jest.fn().mockResolvedValue(firebaseUserRecord),
-    });
+    mockVerifyIdToken.mockResolvedValue({ uid: '456', email: 'new@test.com', name: 'Newbie' });
+    mockGetUser.mockResolvedValue(firebaseUserRecord);
     // Simulate user not found in our DB
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(undefined);
     // Mock the set function to check if it's called
@@ -81,10 +88,7 @@ describe('Auth Middleware', () => {
 
   it('should return 403 if token is invalid', async () => {
     mockRequest.headers = { authorization: 'Bearer invalid-token' };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockedAdmin.auth as any).mockReturnValue({
-      verifyIdToken: jest.fn().mockRejectedValue(new Error('Invalid token')),
-    });
+    mockVerifyIdToken.mockRejectedValue(new Error('Invalid token'));
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
 

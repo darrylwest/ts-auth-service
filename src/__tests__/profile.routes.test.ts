@@ -1,21 +1,38 @@
+
+
+const mockVerifyIdToken = jest.fn();
+const mockGetUser = jest.fn();
+
+jest.mock('firebase-admin', () => ({
+  apps: {
+    length: 1,
+  },
+  auth: () => ({
+    verifyIdToken: mockVerifyIdToken,
+    getUser: mockGetUser,
+  }),
+  credential: {
+    cert: jest.fn(),
+  },
+  initializeApp: jest.fn(),
+}));
+jest.mock('../config/db');
+
 // src/__tests__/profile.routes.test.ts
+
 import request from 'supertest';
 import app from '../app'; // Import the decoupled express app
 import * as admin from 'firebase-admin';
 import { userStore } from '../config/db';
 import { UserProfile } from '../types/models';
 
-// Mock the same modules as before
-jest.mock('firebase-admin');
-jest.mock('../config/db');
-
-const mockedAdmin = admin as jest.Mocked<typeof admin>;
-
 describe('GET /api/profile', () => {
   // Clear mocks and the in-memory store before each test
   beforeEach(async () => {
     jest.clearAllMocks();
     await (userStore as jest.Mocked<typeof userStore>).clear();
+    mockVerifyIdToken.mockReset();
+    mockGetUser.mockReset();
   });
 
   it('should return 401 Unauthorized if no token is provided', async () => {
@@ -24,10 +41,7 @@ describe('GET /api/profile', () => {
   });
 
   it('should return 403 Forbidden if the token is invalid', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockedAdmin.auth as any).mockReturnValue({
-      verifyIdToken: jest.fn().mockRejectedValue(new Error('Invalid token')),
-    });
+    mockVerifyIdToken.mockRejectedValue(new Error('Invalid token'));
 
     const response = await request(app).get('/api/profile').set('Authorization', 'Bearer invalid-token');
 
@@ -39,10 +53,7 @@ describe('GET /api/profile', () => {
     const fakeUser: UserProfile = { uid: '123', name: 'Test User', role: 'user', bio: 'I am a test', createdAt: 'now' };
 
     // Setup mocks
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockedAdmin.auth as any).mockReturnValue({
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: '123' }),
-    });
+        mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'test@example.com', name: 'Test User', exp: 1234567890, iat: 1234567890, auth_time: 1234567890, firebase: { identities: {}, sign_in_provider: 'custom' } });
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(fakeUser);
 
     const response = await request(app).get('/api/profile').set('Authorization', `Bearer ${fakeToken}`);
