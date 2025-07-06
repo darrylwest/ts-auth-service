@@ -1,5 +1,3 @@
-
-
 const mockVerifyIdToken = jest.fn();
 const mockGetUser = jest.fn();
 
@@ -53,7 +51,15 @@ describe('GET /api/profile', () => {
     const fakeUser: UserProfile = { uid: '123', name: 'Test User', role: 'user', bio: 'I am a test', createdAt: 'now' };
 
     // Setup mocks
-        mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'test@example.com', name: 'Test User', exp: 1234567890, iat: 1234567890, auth_time: 1234567890, firebase: { identities: {}, sign_in_provider: 'custom' } });
+    mockVerifyIdToken.mockResolvedValue({
+      uid: '123',
+      email: 'test@example.com',
+      name: 'Test User',
+      exp: 1234567890,
+      iat: 1234567890,
+      auth_time: 1234567890,
+      firebase: { identities: {}, sign_in_provider: 'custom' },
+    });
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(fakeUser);
 
     const response = await request(app).get('/api/profile').set('Authorization', `Bearer ${fakeToken}`);
