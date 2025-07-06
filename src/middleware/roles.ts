@@ -5,16 +5,17 @@ import { UserRole } from '../types/models';
 export function checkRole(requiredRoles: UserRole[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).send({ error: 'Authentication required.' });
+      res.status(401).send({ error: 'Authentication required.' });
+      return;
     }
 
     const userRole = req.user.role;
     if (requiredRoles.includes(userRole)) {
       next();
-      return; // Explicitly return void
+      return;
     } else {
       res.status(403).send({ error: 'Forbidden: Insufficient permissions.' });
-      return; // Explicitly return void
+      return;
     }
   };
 }

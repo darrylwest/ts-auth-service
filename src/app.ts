@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'; // Make sure these are imported
+import express, { Request, Response } from 'express'; // Make sure these are imported
 import * as admin from 'firebase-admin';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -6,6 +6,7 @@ import { authMiddleware } from './middleware/auth';
 import { checkRole } from './middleware/roles';
 import { userStore } from './config/db';
 import logger from './config/logger';
+import { UserProfile } from './types/models';
 
 dotenv.config();
 

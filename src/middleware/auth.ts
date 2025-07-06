@@ -8,7 +8,8 @@ import logger from '../config/logger';
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).send({ error: 'Unauthorized: No token provided.' });
+    res.status(401).send({ error: 'Unauthorized: No token provided.' });
+    return;
   }
 
   const idToken = authHeader.split('Bearer ')[1];
