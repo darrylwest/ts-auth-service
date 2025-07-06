@@ -81,5 +81,14 @@ Architecture Diagram:
 
 TypeScript implementation.
 
+### Unit & Integration Testing
+
+Jest
+
+* Unit/Integration Tests: write tests that fall somewhere between pure unit and integration tests. For example, we'll test our middleware in isolation, but it will interact with a (mocked) database and a (mocked) Firebase Admin SDK.
+* Mocking External Services: never make real network calls to Firebase during our tests. This is slow, unreliable, and bad practice. We will use Jest's powerful mocking capabilities to simulate the Firebase Admin SDK's behavior.
+* In-Memory Database: leverage the fact that Keyv uses an in-memory Map by default when no connection string is provided. This is perfect for testing, as it's extremely fast and requires no external setup. We'll ensure it's cleared between tests to maintain isolation.
+* API Endpoint Testing: use the supertest library to make mock HTTP requests to our Express application. This allows us to test the entire request-response cycle, including routing, middleware, and controller logic, without actually starting a server.
+
 ###### dpw | 2025-07-06 | 81RiRJ6EaTIW
 
