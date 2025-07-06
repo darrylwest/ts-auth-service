@@ -17,7 +17,7 @@ const mockedAdmin = admin as jest.Mocked<typeof admin>;
 describe('Auth Middleware', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let mockNext: NextFunction = jest.fn();
+  const mockNext: NextFunction = jest.fn();
 
   // Reset mocks before each test
   beforeEach(() => {
