@@ -35,8 +35,10 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
 
     req.user = userProfile;
     next();
+    return; // Explicitly return void
   } catch (error) {
     logger.error('Error verifying auth token:', error);
     res.status(403).send({ error: 'Forbidden: Invalid token.' });
+    return; // Explicitly return void
   }
 }

@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express'; // Make sure these are imported
 import * as admin from 'firebase-admin';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -43,28 +43,29 @@ app.get('/api/admin/dashboard', authMiddleware, checkRole(['admin', 'super-admin
 });
 
 // Update profile route
-app.put('/api/profile', authMiddleware, async (req: Request, res: Response) => {
-  const { name, bio }: { name?: string; bio?: string } = req.body;
-  const uid = req.user!.uid; // We know user exists from middleware
+app.put('/api/profile', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { name, bio }: { name?: string; bio?: string } = req.body;
+        const uid = req.user!.uid;
 
-  try {
-    const existingProfile = await userStore.get(uid);
-    if (!existingProfile) {
-      return res.status(404).json({ error: 'User profile not found.' });
+        const currentUserProfile = await userStore.get(uid);
+        if (!currentUserProfile) {
+            res.status(404).json({ error: 'User profile not found.' });
+            return; // Use a plain return to exit the function
+        }
+        
+        const updatedProfile: UserProfile = { 
+            ...currentUserProfile, 
+            name: name ?? currentUserProfile.name,
+            bio: bio ?? currentUserProfile.bio,
+        };
+
+        await userStore.set(uid, updatedProfile);
+        res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
+    } catch (error) {
+        logger.error('Failed to update profile.', { error, uid: req.user?.uid });
+        res.status(500).json({ error: 'Failed to update profile.' });
     }
-
-    const updatedProfile: UserProfile = {
-      ...existingProfile,
-      name: name || existingProfile.name,
-      bio: bio || existingProfile.bio,
-    };
-
-    await userStore.set(uid, updatedProfile);
-    res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
-  } catch (error) {
-    logger.error('Error updating profile:', error);
-    res.status(500).json({ error: 'Failed to update profile.' });
-  }
 });
 
 export default app;

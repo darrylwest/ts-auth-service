@@ -11,8 +11,10 @@ export function checkRole(requiredRoles: UserRole[]) {
     const userRole = req.user.role;
     if (requiredRoles.includes(userRole)) {
       next();
+      return; // Explicitly return void
     } else {
       res.status(403).send({ error: 'Forbidden: Insufficient permissions.' });
+      return; // Explicitly return void
     }
   };
 }
