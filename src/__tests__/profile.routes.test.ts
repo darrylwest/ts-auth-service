@@ -24,6 +24,7 @@ describe('GET /api/profile', () => {
   });
 
   it('should return 403 Forbidden if the token is invalid', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockedAdmin.auth as any).mockReturnValue({
       verifyIdToken: jest.fn().mockRejectedValue(new Error('Invalid token')),
     });
@@ -38,6 +39,7 @@ describe('GET /api/profile', () => {
     const fakeUser: UserProfile = { uid: '123', name: 'Test User', role: 'user', bio: 'I am a test', createdAt: 'now' };
 
     // Setup mocks
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockedAdmin.auth as any).mockReturnValue({
       verifyIdToken: jest.fn().mockResolvedValue({ uid: '123' }),
     });

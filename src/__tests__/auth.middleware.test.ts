@@ -42,6 +42,7 @@ describe('Auth Middleware', () => {
     mockRequest.headers = { authorization: `Bearer ${fakeToken}` };
 
     // Mock the return values
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockedAdmin.auth as any).mockReturnValue({
       verifyIdToken: jest.fn().mockResolvedValue({ uid: '123' }),
     });
@@ -59,6 +60,7 @@ describe('Auth Middleware', () => {
     const firebaseUserRecord = { uid: '456', email: 'new@test.com', displayName: 'Newbie' };
     mockRequest.headers = { authorization: `Bearer ${fakeToken}` };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockedAdmin.auth as any).mockReturnValue({
       verifyIdToken: jest.fn().mockResolvedValue({ uid: '456' }),
       getUser: jest.fn().mockResolvedValue(firebaseUserRecord),
@@ -79,6 +81,7 @@ describe('Auth Middleware', () => {
 
   it('should return 403 if token is invalid', async () => {
     mockRequest.headers = { authorization: 'Bearer invalid-token' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockedAdmin.auth as any).mockReturnValue({
       verifyIdToken: jest.fn().mockRejectedValue(new Error('Invalid token')),
     });

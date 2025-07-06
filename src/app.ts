@@ -11,7 +11,7 @@ import { UserProfile } from './types/models';
 
 // Initialize Firebase Admin (only once)
 if (!admin.apps.length) {
-  const serviceAccount = require('../../keys/service-account.json');
+  import serviceAccount from '../../keys/service-account.json';
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
