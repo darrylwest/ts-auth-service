@@ -90,5 +90,14 @@ Jest
 * In-Memory Database: leverage the fact that Keyv uses an in-memory Map by default when no connection string is provided. This is perfect for testing, as it's extremely fast and requires no external setup. We'll ensure it's cleared between tests to maintain isolation.
 * API Endpoint Testing: use the supertest library to make mock HTTP requests to our Express application. This allows us to test the entire request-response cycle, including routing, middleware, and controller logic, without actually starting a server.
 
+### Linting & Source Code Pretty
+
+* eslint: core ESLint library.
+* prettier: core Prettier library.
+* @typescript-eslint/parser: A parser that allows ESLint to understand TypeScript syntax.
+* @typescript-eslint/eslint-plugin: A plugin that provides TypeScript-specific linting rules.
+* eslint-config-prettier: Crucially, this turns off all ESLint rules that are unnecessary or might conflict with Prettier.
+* eslint-plugin-prettier: Runs Prettier as an ESLint rule and reports differences as individual ESLint issues. This allows you to fix formatting issues automatically with eslint --fix.
+
 ###### dpw | 2025-07-06 | 81RiRJ6EaTIW
 

@@ -1,0 +1,7 @@
+# This can often be the same as .eslintignore
+node_modules
+dist
+coverage
+keys
+# Often good to ignore package-lock.json to prevent churn
+package-lock.json

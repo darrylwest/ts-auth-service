@@ -40,7 +40,7 @@ describe('Auth Middleware', () => {
     const fakeToken = 'valid-token';
     const fakeUser: UserProfile = { uid: '123', name: 'Test User', role: 'user', bio: '', createdAt: '' };
     mockRequest.headers = { authorization: `Bearer ${fakeToken}` };
-    
+
     // Mock the return values
     (mockedAdmin.auth as any).mockReturnValue({
       verifyIdToken: jest.fn().mockResolvedValue({ uid: '123' }),
@@ -60,8 +60,8 @@ describe('Auth Middleware', () => {
     mockRequest.headers = { authorization: `Bearer ${fakeToken}` };
 
     (mockedAdmin.auth as any).mockReturnValue({
-        verifyIdToken: jest.fn().mockResolvedValue({ uid: '456' }),
-        getUser: jest.fn().mockResolvedValue(firebaseUserRecord)
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: '456' }),
+      getUser: jest.fn().mockResolvedValue(firebaseUserRecord),
     });
     // Simulate user not found in our DB
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(undefined);
@@ -69,7 +69,7 @@ describe('Auth Middleware', () => {
     (userStore as jest.Mocked<typeof userStore>).set.mockResolvedValue(true);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, mockNext);
-    
+
     expect(userStore.set).toHaveBeenCalled(); // Check that we tried to create a user
     expect(mockNext).toHaveBeenCalled();
     expect(mockRequest.user).toBeDefined();
@@ -97,4 +97,3 @@ describe('Auth Middleware', () => {
     expect(mockResponse.status).toHaveBeenCalledWith(401);
   });
 });
-

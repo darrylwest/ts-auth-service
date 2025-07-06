@@ -13,7 +13,7 @@ import { UserProfile } from './types/models';
 if (!admin.apps.length) {
   const serviceAccount = require('../../keys/service-account.json');
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
   });
 }
 
@@ -29,7 +29,7 @@ app.get('/api/public', (req: Request, res: Response) => {
 app.get('/api/profile', authMiddleware, (req: Request, res: Response) => {
   res.json({
     message: `Welcome, ${req.user?.name || req.user?.email}!`,
-    userProfile: req.user
+    userProfile: req.user,
   });
 });
 
@@ -40,18 +40,18 @@ app.get('/api/admin/dashboard', authMiddleware, checkRole(['admin', 'super-admin
 
 app.put('/api/profile', authMiddleware, async (req: Request, res: Response) => {
   try {
-    const { name, bio }: { name?: string, bio?: string } = req.body;
+    const { name, bio }: { name?: string; bio?: string } = req.body;
     const uid = req.user!.uid; // We know user exists from middleware
 
     const currentUserProfile = await userStore.get(uid);
     if (!currentUserProfile) {
-        return res.status(404).json({ error: 'User profile not found.' });
+      return res.status(404).json({ error: 'User profile not found.' });
     }
-    
-    const updatedProfile: UserProfile = { 
-        ...currentUserProfile, 
-        name: name ?? currentUserProfile.name, // Use new value or keep old
-        bio: bio ?? currentUserProfile.bio,
+
+    const updatedProfile: UserProfile = {
+      ...currentUserProfile,
+      name: name ?? currentUserProfile.name, // Use new value or keep old
+      bio: bio ?? currentUserProfile.bio,
     };
 
     await userStore.set(uid, updatedProfile);
@@ -61,6 +61,5 @@ app.put('/api/profile', authMiddleware, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update profile.' });
   }
 });
-
 
 export default app;

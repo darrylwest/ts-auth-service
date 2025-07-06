@@ -13,6 +13,6 @@ if (process.env.NODE_ENV === 'production' && process.env.REDIS_URL) {
   userStore = new Keyv<UserProfile>({ namespace: 'users' });
 }
 
-userStore.on('error', err => console.error('Keyv Error:', err));
+userStore.on('error', (err) => console.error('Keyv Error:', err));
 
 export { userStore };
