@@ -213,7 +213,10 @@ curl -X GET http://localhost:3000/api/admin/dashboard \
 ```
 
 
+## References
+
+* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
 
 
-###### dpw | 2025-07-06 | 81SHguzCOs8h
+###### dpw | 2025-07-06 | 81TTlc69mvL6
 
