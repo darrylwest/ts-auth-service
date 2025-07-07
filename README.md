@@ -25,6 +25,57 @@ A public endpoint that does not require authentication. Returns a simple message
 curl -X GET http://localhost:3000/api/ping
 ```
 
+**Response:**
+```json
+{
+  "message": "pong"
+}
+```
+
+#### `POST /api/auth/signup`
+Creates a new user account with email and password. This endpoint does not require authentication.
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123",
+    "name": "User Name"
+  }'
+```
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "name": "User Name"
+}
+```
+
+**Note:** The `name` field is optional. If not provided, the username part of the email will be used.
+
+**Success Response (201):**
+```json
+{
+  "message": "User created successfully",
+  "user": {
+    "uid": "firebase-user-id",
+    "email": "user@example.com",
+    "name": "User Name",
+    "role": "user",
+    "createdAt": "ISO-8601-timestamp"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Missing email/password, invalid email format, or password too short
+- `409 Conflict`: Email already exists
+- `500 Internal Server Error`: Server error during user creation
+
 ### Authenticated Endpoints
 
 All authenticated endpoints require a valid Firebase ID token in the `Authorization` header, in the format `Bearer <token>`.

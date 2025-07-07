@@ -31,6 +31,85 @@ export default function createApp() {
     res.json({ message: 'pong' });
   });
 
+  // User registration route
+  app.post('/api/auth/signup', async (req: Request, res: Response) => {
+    const { email, password, name }: { email: string; password: string; name?: string } = req.body;
+
+    // Input validation
+    if (!email || !password) {
+      res.status(400).json({ error: 'Email and password are required.' });
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ error: 'Invalid email format.' });
+      return;
+    }
+
+    // Password strength validation
+    if (password.length < 6) {
+      res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    try {
+      // Create user in Firebase
+      const userRecord = await admin.auth().createUser({
+        email: email.toLowerCase(),
+        password: password,
+        displayName: name || email.split('@')[0],
+      });
+
+      // Create user profile in our store
+      const userProfile: UserProfile = {
+        uid: userRecord.uid,
+        email: userRecord.email || email.toLowerCase(),
+        name: name || userRecord.displayName || email.split('@')[0],
+        role: 'user',
+        bio: '',
+        createdAt: new Date().toISOString(),
+      };
+
+      await userStore.set(userRecord.uid, userProfile);
+
+      logger.info('User created successfully', { uid: userRecord.uid, email: userRecord.email });
+      
+      res.status(201).json({
+        message: 'User created successfully',
+        user: {
+          uid: userProfile.uid,
+          email: userProfile.email,
+          name: userProfile.name,
+          role: userProfile.role,
+          createdAt: userProfile.createdAt,
+        },
+      });
+    } catch (error) {
+      logger.error('Error creating user:', error);
+      
+      if (error && typeof error === 'object' && 'code' in error) {
+        switch (error.code) {
+          case 'auth/email-already-exists':
+            res.status(409).json({ error: 'Email already exists.' });
+            return;
+          case 'auth/invalid-email':
+            res.status(400).json({ error: 'Invalid email format.' });
+            return;
+          case 'auth/weak-password':
+            res.status(400).json({ error: 'Password is too weak.' });
+            return;
+          default:
+            res.status(500).json({ error: 'Failed to create user.' });
+            return;
+        }
+      }
+      
+      res.status(500).json({ error: 'Failed to create user.' });
+    }
+  });
+
   // Protected route - requires authentication
   app.get('/api/profile', authMiddleware, (req: Request, res: Response) => {
     res.json({

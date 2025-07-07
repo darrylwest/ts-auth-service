@@ -4,6 +4,7 @@ import { UserProfile } from '../../types/models';
 // Mock Firebase Admin SDK functions
 export const mockVerifyIdToken = jest.fn();
 export const mockGetUser = jest.fn();
+export const mockCreateUser = jest.fn();
 
 // Mock userStore with pre-populated data
 export const mockUserStore = {
@@ -21,6 +22,7 @@ jest.mock('firebase-admin', () => ({
   auth: () => ({
     verifyIdToken: mockVerifyIdToken,
     getUser: mockGetUser,
+    createUser: mockCreateUser,
   }),
   credential: {
     cert: jest.fn(),
@@ -40,6 +42,7 @@ export function setupFirebaseMocks() {
   // Reset all mocks
   mockVerifyIdToken.mockReset();
   mockGetUser.mockReset();
+  mockCreateUser.mockReset();
   mockUserStore.get.mockReset();
   mockUserStore.set.mockReset();
   mockUserStore.clear.mockReset();
@@ -76,6 +79,26 @@ export function setupFirebaseMocks() {
       uid: user.uid,
       email: user.email,
       displayName: user.name,
+    });
+  });
+
+  // Setup user creation responses
+  mockCreateUser.mockImplementation((createRequest: { email: string; password: string; displayName?: string }) => {
+    const existingUser = Object.values(PRELOADED_USERS).find((user) => user.email === createRequest.email);
+    
+    if (existingUser) {
+      const error = new Error('Email already exists');
+      (error as { code: string }).code = 'auth/email-already-exists';
+      return Promise.reject(error);
+    }
+
+    // Generate a unique UID for the new user
+    const newUid = `mock-uid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    return Promise.resolve({
+      uid: newUid,
+      email: createRequest.email,
+      displayName: createRequest.displayName || createRequest.email.split('@')[0],
     });
   });
 
