@@ -26,10 +26,12 @@ jest.mock('../config/db', () => ({
 // src/__tests__/profile.routes.test.ts
 
 import request from 'supertest';
-import app from '../app'; // Import the decoupled express app
+import createApp from '../app'; // Import the decoupled express app
 // import * as admin from 'firebase-admin';
 import { userStore } from '../config/db';
 import { UserProfile } from '../types/models';
+
+const app = createApp();
 
 describe('GET /api/profile', () => {
   // Clear mocks and the in-memory store before each test
@@ -244,7 +246,7 @@ describe('GET /api/admin/dashboard', () => {
   });
 });
 
-describe('GET /api/public', () => {
+describe('GET /api/ping', () => {
   it('should return public message without authentication', async () => {
     const response = await request(app).get('/api/ping');
 

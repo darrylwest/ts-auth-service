@@ -11,4 +11,6 @@ module.exports = {
   roots: ['<rootDir>/src'],
   // The test match pattern
   testMatch: ['**/__tests__/**/*.test.ts'],
+  // Test timeout for unit tests
+  testTimeout: 5000,
 };
