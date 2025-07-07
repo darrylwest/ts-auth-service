@@ -45,28 +45,28 @@ app.get('/api/admin/dashboard', authMiddleware, checkRole(['admin', 'super-admin
 
 // Update profile route
 app.put('/api/profile', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { name, bio }: { name?: string; bio?: string } = req.body;
-        const uid = req.user!.uid;
+  try {
+    const { name, bio }: { name?: string; bio?: string } = req.body;
+    const uid = req.user!.uid;
 
-        const currentUserProfile = await userStore.get(uid);
-        if (!currentUserProfile) {
-            res.status(404).json({ error: 'User profile not found.' });
-            return; // Use a plain return to exit the function
-        }
-        
-        const updatedProfile: UserProfile = { 
-            ...currentUserProfile, 
-            name: name ?? currentUserProfile.name,
-            bio: bio ?? currentUserProfile.bio,
-        };
-
-        await userStore.set(uid, updatedProfile);
-        res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
-    } catch (error) {
-        logger.error('Failed to update profile.', { error, uid: req.user?.uid });
-        res.status(500).json({ error: 'Failed to update profile.' });
+    const currentUserProfile = await userStore.get(uid);
+    if (!currentUserProfile) {
+      res.status(404).json({ error: 'User profile not found.' });
+      return; // Use a plain return to exit the function
     }
+
+    const updatedProfile: UserProfile = {
+      ...currentUserProfile,
+      name: name ?? currentUserProfile.name,
+      bio: bio ?? currentUserProfile.bio,
+    };
+
+    await userStore.set(uid, updatedProfile);
+    res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
+  } catch (error) {
+    logger.error('Failed to update profile.', { error, uid: req.user?.uid });
+    res.status(500).json({ error: 'Failed to update profile.' });
+  }
 });
 
 export default app;

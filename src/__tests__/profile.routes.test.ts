@@ -91,12 +91,12 @@ describe('PUT /api/profile', () => {
 
   it('should update user profile successfully', async () => {
     const fakeToken = 'valid-token';
-    const existingUser: UserProfile = { 
-      uid: '123', 
-      name: 'Old Name', 
-      role: 'user', 
-      bio: 'Old bio', 
-      createdAt: '2023-01-01' 
+    const existingUser: UserProfile = {
+      uid: '123',
+      name: 'Old Name',
+      role: 'user',
+      bio: 'Old bio',
+      createdAt: '2023-01-01',
     };
 
     // Setup mocks
@@ -114,10 +114,13 @@ describe('PUT /api/profile', () => {
     expect(response.body.message).toBe('Profile updated successfully');
     expect(response.body.profile.name).toBe('New Name');
     expect(response.body.profile.bio).toBe('New bio');
-    expect(userStore.set).toHaveBeenCalledWith('123', expect.objectContaining({
-      name: 'New Name',
-      bio: 'New bio'
-    }));
+    expect(userStore.set).toHaveBeenCalledWith(
+      '123',
+      expect.objectContaining({
+        name: 'New Name',
+        bio: 'New bio',
+      }),
+    );
   });
 
   it('should return 404 if user profile not found', async () => {
@@ -141,12 +144,12 @@ describe('PUT /api/profile', () => {
 
   it('should handle database errors gracefully', async () => {
     const fakeToken = 'valid-token';
-    const existingUser: UserProfile = { 
-      uid: '123', 
-      name: 'Test User', 
-      role: 'user', 
-      bio: '', 
-      createdAt: '2023-01-01' 
+    const existingUser: UserProfile = {
+      uid: '123',
+      name: 'Test User',
+      role: 'user',
+      bio: '',
+      createdAt: '2023-01-01',
     };
 
     // Setup mocks - auth middleware succeeds, but PUT route fails
@@ -180,21 +183,19 @@ describe('GET /api/admin/dashboard', () => {
 
   it('should return 403 if user is not admin', async () => {
     const fakeToken = 'valid-token';
-    const regularUser: UserProfile = { 
-      uid: '123', 
-      name: 'Regular User', 
-      role: 'user', 
-      bio: '', 
-      createdAt: '2023-01-01' 
+    const regularUser: UserProfile = {
+      uid: '123',
+      name: 'Regular User',
+      role: 'user',
+      bio: '',
+      createdAt: '2023-01-01',
     };
 
     // Setup mocks
     mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'test@example.com' });
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(regularUser);
 
-    const response = await request(app)
-      .get('/api/admin/dashboard')
-      .set('Authorization', `Bearer ${fakeToken}`);
+    const response = await request(app).get('/api/admin/dashboard').set('Authorization', `Bearer ${fakeToken}`);
 
     expect(response.status).toBe(403);
     expect(response.body.error).toBe('Forbidden: Insufficient permissions.');
@@ -202,21 +203,19 @@ describe('GET /api/admin/dashboard', () => {
 
   it('should allow admin access to dashboard', async () => {
     const fakeToken = 'valid-token';
-    const adminUser: UserProfile = { 
-      uid: '123', 
-      name: 'Admin User', 
-      role: 'admin', 
-      bio: '', 
-      createdAt: '2023-01-01' 
+    const adminUser: UserProfile = {
+      uid: '123',
+      name: 'Admin User',
+      role: 'admin',
+      bio: '',
+      createdAt: '2023-01-01',
     };
 
     // Setup mocks
     mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'admin@example.com' });
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(adminUser);
 
-    const response = await request(app)
-      .get('/api/admin/dashboard')
-      .set('Authorization', `Bearer ${fakeToken}`);
+    const response = await request(app).get('/api/admin/dashboard').set('Authorization', `Bearer ${fakeToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Welcome to the Admin Dashboard!');
@@ -225,21 +224,19 @@ describe('GET /api/admin/dashboard', () => {
 
   it('should allow super-admin access to dashboard', async () => {
     const fakeToken = 'valid-token';
-    const superAdminUser: UserProfile = { 
-      uid: '123', 
-      name: 'Super Admin', 
-      role: 'super-admin', 
-      bio: '', 
-      createdAt: '2023-01-01' 
+    const superAdminUser: UserProfile = {
+      uid: '123',
+      name: 'Super Admin',
+      role: 'super-admin',
+      bio: '',
+      createdAt: '2023-01-01',
     };
 
     // Setup mocks
     mockVerifyIdToken.mockResolvedValue({ uid: '123', email: 'superadmin@example.com' });
     (userStore as jest.Mocked<typeof userStore>).get.mockResolvedValue(superAdminUser);
 
-    const response = await request(app)
-      .get('/api/admin/dashboard')
-      .set('Authorization', `Bearer ${fakeToken}`);
+    const response = await request(app).get('/api/admin/dashboard').set('Authorization', `Bearer ${fakeToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Welcome to the Admin Dashboard!');
@@ -250,7 +247,7 @@ describe('GET /api/admin/dashboard', () => {
 describe('GET /api/public', () => {
   it('should return public message without authentication', async () => {
     const response = await request(app).get('/api/public');
-    
+
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('This is a public endpoint.');
   });

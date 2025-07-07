@@ -15,7 +15,7 @@ export function expectErrorResponse(response: Response, expectedStatus: number, 
   expect(response.status).toBe(expectedStatus);
   expect(response.headers['content-type']).toMatch(/json/);
   expect(response.body).toHaveProperty('error');
-  
+
   if (expectedError) {
     expect(response.body.error).toBe(expectedError);
   }
@@ -47,14 +47,14 @@ export function expectValidUserProfile(profile: unknown): void {
   expect(profile).toHaveProperty('role');
   expect(profile).toHaveProperty('bio');
   expect(profile).toHaveProperty('createdAt');
-  
+
   const typedProfile = profile as Record<string, unknown>;
   expect(typeof typedProfile.uid).toBe('string');
   expect(typeof typedProfile.name).toBe('string');
   expect(typeof typedProfile.role).toBe('string');
   expect(typeof typedProfile.bio).toBe('string');
   expect(typeof typedProfile.createdAt).toBe('string');
-  
+
   expect(['user', 'admin', 'super-admin']).toContain(typedProfile.role);
 }
 
@@ -62,7 +62,7 @@ export function expectProfileResponse(response: Response, expectedProfile?: Part
   expectSuccessResponse(response);
   expect(response.body).toHaveProperty('userProfile');
   expectValidUserProfile(response.body.userProfile);
-  
+
   if (expectedProfile) {
     if (expectedProfile.uid) expect(response.body.userProfile.uid).toBe(expectedProfile.uid);
     if (expectedProfile.name) expect(response.body.userProfile.name).toBe(expectedProfile.name);
@@ -77,7 +77,7 @@ export function expectProfileUpdateResponse(response: Response, expectedProfile?
   expect(response.body).toHaveProperty('message', 'Profile updated successfully');
   expect(response.body).toHaveProperty('profile');
   expectValidUserProfile(response.body.profile);
-  
+
   if (expectedProfile) {
     if (expectedProfile.name) expect(response.body.profile.name).toBe(expectedProfile.name);
     if (expectedProfile.bio) expect(response.body.profile.bio).toBe(expectedProfile.bio);
@@ -89,7 +89,7 @@ export function expectAdminDashboardResponse(response: Response, expectedUser?: 
   expect(response.body).toHaveProperty('message', 'Welcome to the Admin Dashboard!');
   expect(response.body).toHaveProperty('adminUser');
   expectValidUserProfile(response.body.adminUser);
-  
+
   if (expectedUser) {
     if (expectedUser.uid) expect(response.body.adminUser.uid).toBe(expectedUser.uid);
     if (expectedUser.role) expect(response.body.adminUser.role).toBe(expectedUser.role);

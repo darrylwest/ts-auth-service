@@ -19,7 +19,7 @@ describe('Roles Middleware', () => {
   describe('checkRole', () => {
     it('should return 401 if user is not authenticated', () => {
       const middleware = checkRole(['admin']);
-      
+
       middleware(mockRequest as Request, mockResponse as Response, mockNext);
 
       expect(mockResponse.status).toHaveBeenCalledWith(401);
@@ -33,7 +33,7 @@ describe('Roles Middleware', () => {
         name: 'Admin User',
         role: 'admin',
         bio: '',
-        createdAt: '2023-01-01'
+        createdAt: '2023-01-01',
       };
       mockRequest.user = adminUser;
 
@@ -50,7 +50,7 @@ describe('Roles Middleware', () => {
         name: 'Super Admin',
         role: 'super-admin',
         bio: '',
-        createdAt: '2023-01-01'
+        createdAt: '2023-01-01',
       };
       mockRequest.user = superAdminUser;
 
@@ -67,7 +67,7 @@ describe('Roles Middleware', () => {
         name: 'Regular User',
         role: 'user',
         bio: '',
-        createdAt: '2023-01-01'
+        createdAt: '2023-01-01',
       };
       mockRequest.user = regularUser;
 
@@ -85,7 +85,7 @@ describe('Roles Middleware', () => {
         name: 'Admin User',
         role: 'admin',
         bio: '',
-        createdAt: '2023-01-01'
+        createdAt: '2023-01-01',
       };
       mockRequest.user = adminUser;
 

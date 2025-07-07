@@ -10,11 +10,11 @@ let app: Express;
 export async function setupTestEnvironment(): Promise<Express> {
   // Setup Firebase mocks first
   setupFirebaseMocks();
-  
+
   // Import app after mocks are setup
   const appModule = await import('../../app');
   app = appModule.default;
-  
+
   return app;
 }
 
@@ -33,7 +33,7 @@ export async function teardownTestEnvironment(): Promise<void> {
 export async function resetTestState(): Promise<void> {
   // Reset Firebase mocks
   setupFirebaseMocks();
-  
+
   // The userStore is already in-memory and isolated per test
   // No additional cleanup needed
 }

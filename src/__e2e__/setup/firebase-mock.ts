@@ -48,7 +48,7 @@ export function setupFirebaseMocks() {
   // Setup token verification responses
   mockVerifyIdToken.mockImplementation((token: string) => {
     const userRecord = FIREBASE_USER_RECORDS[token as keyof typeof FIREBASE_USER_RECORDS];
-    
+
     if (!userRecord) {
       return Promise.reject(new Error('Invalid token'));
     }
@@ -66,8 +66,8 @@ export function setupFirebaseMocks() {
 
   // Setup user retrieval responses
   mockGetUser.mockImplementation((uid: string) => {
-    const user = Object.values(TEST_USERS).find(u => u.uid === uid);
-    
+    const user = Object.values(TEST_USERS).find((u) => u.uid === uid);
+
     if (!user) {
       return Promise.reject(new Error('User not found'));
     }
@@ -93,14 +93,14 @@ export function setupFirebaseMocks() {
 
   mockUserStore.clear.mockImplementation(() => {
     // Clear preloaded users except the ones we want to keep
-    Object.keys(PRELOADED_USERS).forEach(key => {
+    Object.keys(PRELOADED_USERS).forEach((key) => {
       delete PRELOADED_USERS[key];
     });
     // Re-add the test users
     Object.assign(PRELOADED_USERS, {
       [TEST_USERS.ADMIN_USER.uid]: TEST_USERS.ADMIN_USER,
       [TEST_USERS.SUPER_ADMIN_USER.uid]: TEST_USERS.SUPER_ADMIN_USER,
-      [TEST_USERS.REGULAR_USER.uid]: TEST_USERS.REGULAR_USER
+      [TEST_USERS.REGULAR_USER.uid]: TEST_USERS.REGULAR_USER,
     });
     return Promise.resolve();
   });

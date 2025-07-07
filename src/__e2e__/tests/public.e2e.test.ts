@@ -21,26 +21,24 @@ describe('Public API Endpoints E2E', () => {
     it('should not require authentication', async () => {
       // Make request without any authentication
       const response = await apiClient.get('/api/public');
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        message: 'This is a public endpoint.'
+        message: 'This is a public endpoint.',
       });
     });
 
     it('should return proper JSON content type', async () => {
       const response = await apiClient.get('/api/public');
-      
+
       expect(response.headers['content-type']).toMatch(/application\/json/);
       expect(response.body).toBeTruthy();
     });
 
     it('should work with authentication header present (ignored)', async () => {
       // Even with auth header, public endpoint should work
-      const response = await apiClient
-        .withAuth('some-token')
-        .get('/api/public');
-      
+      const response = await apiClient.withAuth('some-token').get('/api/public');
+
       expectPublicResponse(response);
     });
   });

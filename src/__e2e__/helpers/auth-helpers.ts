@@ -59,13 +59,13 @@ export function validateUserProfile(profile: unknown): void {
   expect(profile).toHaveProperty('role');
   expect(profile).toHaveProperty('bio');
   expect(profile).toHaveProperty('createdAt');
-  
+
   const typedProfile = profile as Record<string, unknown>;
   expect(typeof typedProfile.uid).toBe('string');
   expect(typeof typedProfile.name).toBe('string');
   expect(typeof typedProfile.role).toBe('string');
   expect(typeof typedProfile.bio).toBe('string');
   expect(typeof typedProfile.createdAt).toBe('string');
-  
+
   expect(['user', 'admin', 'super-admin']).toContain(typedProfile.role);
 }
