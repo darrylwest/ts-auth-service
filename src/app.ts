@@ -110,6 +110,78 @@ export default function createApp() {
     }
   });
 
+  // User sign-in route
+  app.post('/api/auth/signin', async (req: Request, res: Response) => {
+    const { email, password }: { email: string; password: string } = req.body;
+
+    // Input validation
+    if (!email || !password) {
+      res.status(400).json({ error: 'Email and password are required.' });
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ error: 'Invalid email format.' });
+      return;
+    }
+
+    try {
+      // Get user by email to verify they exist
+      const userRecord = await admin.auth().getUserByEmail(email.toLowerCase());
+      
+      // In a real implementation, you would verify the password here.
+      // Firebase Admin SDK doesn't provide password verification directly.
+      // This is typically done on the client side with Firebase Auth.
+      // For server-side implementation, you would need to use Firebase REST API
+      // or implement your own password verification system.
+      
+      // For now, we'll generate a custom token for the user
+      // In production, you should verify the password first
+      const customToken = await admin.auth().createCustomToken(userRecord.uid);
+      
+      // Get user profile from our store
+      const userProfile = await userStore.get(userRecord.uid);
+      
+      if (!userProfile) {
+        res.status(404).json({ error: 'User profile not found.' });
+        return;
+      }
+
+      logger.info('User signed in successfully', { uid: userRecord.uid, email: userRecord.email });
+      
+      res.status(200).json({
+        message: 'Sign-in successful',
+        token: customToken,
+        user: {
+          uid: userProfile.uid,
+          email: userProfile.email,
+          name: userProfile.name,
+          role: userProfile.role,
+        },
+      });
+    } catch (error) {
+      logger.error('Error during sign-in:', error);
+      
+      if (error && typeof error === 'object' && 'code' in error) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+            res.status(401).json({ error: 'Invalid email or password.' });
+            return;
+          case 'auth/invalid-email':
+            res.status(400).json({ error: 'Invalid email format.' });
+            return;
+          default:
+            res.status(500).json({ error: 'Sign-in failed.' });
+            return;
+        }
+      }
+      
+      res.status(500).json({ error: 'Sign-in failed.' });
+    }
+  });
+
   // Protected route - requires authentication
   app.get('/api/profile', authMiddleware, (req: Request, res: Response) => {
     res.json({

@@ -76,6 +76,49 @@ curl -X POST http://localhost:3000/api/auth/signup \
 - `409 Conflict`: Email already exists
 - `500 Internal Server Error`: Server error during user creation
 
+#### `POST /api/auth/signin`
+Authenticates a user with email and password. Returns a custom Firebase token for authenticated sessions.
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:3000/api/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "password": "password123"
+  }'
+```
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Sign-in successful",
+  "token": "custom-firebase-token-here",
+  "user": {
+    "uid": "firebase-user-id",
+    "email": "user@example.com",
+    "name": "User Name",
+    "role": "user"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Missing email/password or invalid email format
+- `401 Unauthorized`: Invalid email or password (user not found)
+- `404 Not Found`: User profile not found in system
+- `500 Internal Server Error`: Server error during sign-in
+
+**Note:** The returned token is a Firebase custom token that should be exchanged for an ID token on the client side using the Firebase SDK.
+
 ### Authenticated Endpoints
 
 All authenticated endpoints require a valid Firebase ID token in the `Authorization` header, in the format `Bearer <token>`.

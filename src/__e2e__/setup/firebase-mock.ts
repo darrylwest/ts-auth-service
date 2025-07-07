@@ -5,6 +5,8 @@ import { UserProfile } from '../../types/models';
 export const mockVerifyIdToken = jest.fn();
 export const mockGetUser = jest.fn();
 export const mockCreateUser = jest.fn();
+export const mockGetUserByEmail = jest.fn();
+export const mockCreateCustomToken = jest.fn();
 
 // Mock userStore with pre-populated data
 export const mockUserStore = {
@@ -23,6 +25,8 @@ jest.mock('firebase-admin', () => ({
     verifyIdToken: mockVerifyIdToken,
     getUser: mockGetUser,
     createUser: mockCreateUser,
+    getUserByEmail: mockGetUserByEmail,
+    createCustomToken: mockCreateCustomToken,
   }),
   credential: {
     cert: jest.fn(),
@@ -43,6 +47,8 @@ export function setupFirebaseMocks() {
   mockVerifyIdToken.mockReset();
   mockGetUser.mockReset();
   mockCreateUser.mockReset();
+  mockGetUserByEmail.mockReset();
+  mockCreateCustomToken.mockReset();
   mockUserStore.get.mockReset();
   mockUserStore.set.mockReset();
   mockUserStore.clear.mockReset();
@@ -88,7 +94,7 @@ export function setupFirebaseMocks() {
     
     if (existingUser) {
       const error = new Error('Email already exists');
-      (error as { code: string }).code = 'auth/email-already-exists';
+      (error as unknown as { code: string }).code = 'auth/email-already-exists';
       return Promise.reject(error);
     }
 
@@ -100,6 +106,29 @@ export function setupFirebaseMocks() {
       email: createRequest.email,
       displayName: createRequest.displayName || createRequest.email.split('@')[0],
     });
+  });
+
+  // Setup getUserByEmail responses
+  mockGetUserByEmail.mockImplementation((email: string) => {
+    const user = Object.values(PRELOADED_USERS).find((user) => user.email === email.toLowerCase());
+    
+    if (!user) {
+      const error = new Error('User not found');
+      (error as unknown as { code: string }).code = 'auth/user-not-found';
+      return Promise.reject(error);
+    }
+
+    return Promise.resolve({
+      uid: user.uid,
+      email: user.email,
+      displayName: user.name,
+    });
+  });
+
+  // Setup createCustomToken responses
+  mockCreateCustomToken.mockImplementation((uid: string) => {
+    // Generate a mock custom token
+    return Promise.resolve(`mock-custom-token-${uid}-${Date.now()}`);
   });
 
   // Setup userStore mock with pre-populated users
