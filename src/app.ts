@@ -221,5 +221,32 @@ export default function createApp() {
     }
   });
 
+  // Sign-out route
+  app.post('/api/auth/signout', authMiddleware, async (req: Request, res: Response) => {
+    const { revokeAllTokens }: { revokeAllTokens?: boolean } = req.body;
+    const uid = req.user!.uid; // We know user exists from middleware
+
+    try {
+      let revokedTokens = false;
+
+      // If revokeAllTokens is requested, revoke all refresh tokens for enhanced security
+      if (revokeAllTokens) {
+        await admin.auth().revokeRefreshTokens(uid);
+        revokedTokens = true;
+        logger.info('All refresh tokens revoked for user', { uid });
+      }
+
+      logger.info('User signed out successfully', { uid, revokedTokens });
+      
+      res.status(200).json({
+        message: 'Successfully signed out',
+        revokedTokens,
+      });
+    } catch (error) {
+      logger.error('Error during sign-out:', error);
+      res.status(500).json({ error: 'Sign-out failed.' });
+    }
+  });
+
   return app;
 }
