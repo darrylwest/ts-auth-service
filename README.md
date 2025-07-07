@@ -17,12 +17,12 @@ This service exposes the following API endpoints:
 
 ### Public Endpoints
 
-#### `GET /api/public`
+#### `GET /api/ping`
 A public endpoint that does not require authentication. Returns a simple message.
 
 **cURL Example:**
 ```bash
-curl -X GET http://localhost:3000/api/public
+curl -X GET http://localhost:3000/api/ping
 ```
 
 ### Authenticated Endpoints

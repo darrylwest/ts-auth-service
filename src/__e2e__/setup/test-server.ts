@@ -13,7 +13,7 @@ export async function setupTestEnvironment(): Promise<Express> {
 
   // Import app after mocks are setup
   const appModule = await import('../../app');
-  app = appModule.default;
+  app = appModule.default();
 
   return app;
 }

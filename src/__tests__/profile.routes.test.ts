@@ -246,9 +246,9 @@ describe('GET /api/admin/dashboard', () => {
 
 describe('GET /api/public', () => {
   it('should return public message without authentication', async () => {
-    const response = await request(app).get('/api/public');
+    const response = await request(app).get('/api/ping');
 
     expect(response.status).toBe(200);
-    expect(response.body.message).toBe('This is a public endpoint.');
+    expect(response.body.message).toBe('pong');
   });
 });

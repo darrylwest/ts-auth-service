@@ -98,5 +98,5 @@ export function expectAdminDashboardResponse(response: Response, expectedUser?: 
 
 export function expectPublicResponse(response: Response): void {
   expectSuccessResponse(response);
-  expect(response.body).toHaveProperty('message', 'This is a public endpoint.');
+  expect(response.body).toHaveProperty('message', 'pong');
 }

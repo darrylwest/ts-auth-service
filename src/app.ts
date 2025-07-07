@@ -19,54 +19,56 @@ if (!admin.apps.length) {
   });
 }
 
-const app = express();
+export default function createApp() {
+  const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+  // Middleware
+  app.use(cors());
+  app.use(express.json());
 
-// Public route
-app.get('/api/public', (req: Request, res: Response) => {
-  res.json({ message: 'This is a public endpoint.' });
-});
-
-// Protected route - requires authentication
-app.get('/api/profile', authMiddleware, (req: Request, res: Response) => {
-  res.json({
-    message: `Welcome, ${req.user?.name || req.user?.email}!`, // req.user is set by authMiddleware
-    userProfile: req.user,
+  // Public route
+  app.get('/api/ping', (req: Request, res: Response) => {
+    res.json({ message: 'pong' });
   });
-});
 
-// Admin route - requires admin role
-app.get('/api/admin/dashboard', authMiddleware, checkRole(['admin', 'super-admin']), (req: Request, res: Response) => {
-  res.json({ message: 'Welcome to the Admin Dashboard!', adminUser: req.user });
-});
+  // Protected route - requires authentication
+  app.get('/api/profile', authMiddleware, (req: Request, res: Response) => {
+    res.json({
+      message: `Welcome, ${req.user?.name || req.user?.email}!`, // req.user is set by authMiddleware
+      userProfile: req.user,
+    });
+  });
 
-// Update profile route
-app.put('/api/profile', authMiddleware, async (req: Request, res: Response): Promise<void> => {
-  try {
+  // Admin route - requires admin role
+  app.get('/api/admin/dashboard', authMiddleware, checkRole(['admin', 'super-admin']), (req: Request, res: Response) => {
+    res.json({ message: 'Welcome to the Admin Dashboard!', adminUser: req.user });
+  });
+
+  // Update profile route
+  app.put('/api/profile', authMiddleware, async (req: Request, res: Response) => {
     const { name, bio }: { name?: string; bio?: string } = req.body;
-    const uid = req.user!.uid;
+    const uid = req.user!.uid; // We know user exists from middleware
 
-    const currentUserProfile = await userStore.get(uid);
-    if (!currentUserProfile) {
-      res.status(404).json({ error: 'User profile not found.' });
-      return; // Use a plain return to exit the function
+    try {
+      const existingProfile = await userStore.get(uid);
+      if (!existingProfile) {
+        res.status(404).json({ error: 'User profile not found.' });
+        return;
+      }
+
+      const updatedProfile: UserProfile = {
+        ...existingProfile,
+        name: name || existingProfile.name,
+        bio: bio || existingProfile.bio,
+      };
+
+      await userStore.set(uid, updatedProfile);
+      res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
+    } catch (error) {
+      logger.error('Error updating profile:', error);
+      res.status(500).json({ error: 'Failed to update profile.' });
     }
+  });
 
-    const updatedProfile: UserProfile = {
-      ...currentUserProfile,
-      name: name ?? currentUserProfile.name,
-      bio: bio ?? currentUserProfile.bio,
-    };
-
-    await userStore.set(uid, updatedProfile);
-    res.status(200).json({ message: 'Profile updated successfully', profile: updatedProfile });
-  } catch (error) {
-    logger.error('Failed to update profile.', { error, uid: req.user?.uid });
-    res.status(500).json({ error: 'Failed to update profile.' });
-  }
-});
-
-export default app;
+  return app;
+}
