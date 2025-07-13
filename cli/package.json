@@ -1,0 +1,20 @@
+{
+  "name": "auth-cli",
+  "version": "1.0.0",
+  "description": "CLI client for Auth Service",
+  "type": "module",
+  "scripts": {
+    "signup": "bun run src/signup.ts",
+    "signin": "bun run src/signin.ts", 
+    "verify": "bun run src/verify.ts",
+    "signout": "bun run src/signout.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
