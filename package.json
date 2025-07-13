@@ -1,7 +1,7 @@
 {
   "name": "ts-auth-service",
   "version": "1.0.0",
-  "description": "Node/Typescript service that uses Firebase for authentication while managing user profiles and role-based authorization.",
+  "description": "Node/Typescript service that provides a Firebase authentication gateway.",
   "main": "index.js",
   "directories": {
     "doc": "docs"
@@ -34,13 +34,11 @@
   },
   "homepage": "https://github.com/darrylwest/ts-auth-service#readme",
   "dependencies": {
-    "@keyv/redis": "^4.5.0",
     "@types/winston": "^2.4.4",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
-    "keyv": "^5.3.4",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
