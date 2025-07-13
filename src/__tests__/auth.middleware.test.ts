@@ -54,7 +54,7 @@ describe('Auth Middleware', () => {
       uid: 'test-uid',
       email: 'test@example.com',
     };
-    
+
     req.headers!.authorization = 'Bearer valid-token';
     mockVerifyIdToken.mockResolvedValue(mockDecodedToken);
 

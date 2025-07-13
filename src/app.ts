@@ -60,7 +60,7 @@ export default function createApp() {
       });
 
       logger.info('User created successfully', { uid: userRecord.uid, email: userRecord.email });
-      
+
       res.status(201).json({
         message: 'User created successfully',
         user: {
@@ -71,7 +71,7 @@ export default function createApp() {
       });
     } catch (error) {
       logger.error('Error creating user:', error);
-      
+
       if (error && typeof error === 'object' && 'code' in error) {
         switch (error.code) {
           case 'auth/email-already-exists':
@@ -88,7 +88,7 @@ export default function createApp() {
             return;
         }
       }
-      
+
       res.status(500).json({ error: 'Failed to create user.' });
     }
   });
@@ -113,19 +113,19 @@ export default function createApp() {
     try {
       // Get user by email to verify they exist
       const userRecord = await admin.auth().getUserByEmail(email.toLowerCase());
-      
+
       // In a real implementation, you would verify the password here.
       // Firebase Admin SDK doesn't provide password verification directly.
       // This is typically done on the client side with Firebase Auth.
       // For server-side implementation, you would need to use Firebase REST API
       // or implement your own password verification system.
-      
+
       // For now, we'll generate a custom token for the user
       // In production, you should verify the password first
       const customToken = await admin.auth().createCustomToken(userRecord.uid);
 
       logger.info('User signed in successfully', { uid: userRecord.uid, email: userRecord.email });
-      
+
       res.status(200).json({
         message: 'Sign-in successful',
         token: customToken,
@@ -137,7 +137,7 @@ export default function createApp() {
       });
     } catch (error) {
       logger.error('Error during sign-in:', error);
-      
+
       if (error && typeof error === 'object' && 'code' in error) {
         switch (error.code) {
           case 'auth/user-not-found':
@@ -151,7 +151,7 @@ export default function createApp() {
             return;
         }
       }
-      
+
       res.status(500).json({ error: 'Sign-in failed.' });
     }
   });
@@ -180,7 +180,7 @@ export default function createApp() {
       }
 
       logger.info('User signed out successfully', { uid, revokedTokens });
-      
+
       res.status(200).json({
         message: 'Successfully signed out',
         revokedTokens,
