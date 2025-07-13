@@ -18,14 +18,17 @@ This service exposes the following API endpoints:
 ### Public Endpoints
 
 #### `GET /api/ping`
+
 A public endpoint that does not require authentication. Returns a simple message.
 
 **cURL Example:**
+
 ```bash
 curl -X GET http://localhost:3000/api/ping
 ```
 
 **Response:**
+
 ```json
 {
   "message": "pong"
@@ -36,6 +39,7 @@ curl -X GET http://localhost:3000/api/ping
 Creates a new user account with email and password. This endpoint does not require authentication.
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/auth/signup \
   -H "Content-Type: application/json" \
@@ -47,6 +51,7 @@ curl -X POST http://localhost:3000/api/auth/signup \
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -58,6 +63,7 @@ curl -X POST http://localhost:3000/api/auth/signup \
 **Note:** The `name` field is optional. If not provided, the username part of the email will be used.
 
 **Success Response (201):**
+
 ```json
 {
   "message": "User created successfully",
@@ -80,6 +86,7 @@ curl -X POST http://localhost:3000/api/auth/signup \
 Authenticates a user with email and password. Returns a custom Firebase token for authenticated sessions.
 
 **cURL Example:**
+
 ```bash
 curl -X POST http://localhost:3000/api/auth/signin \
   -H "Content-Type: application/json" \
@@ -90,6 +97,7 @@ curl -X POST http://localhost:3000/api/auth/signin \
 ```
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -98,6 +106,7 @@ curl -X POST http://localhost:3000/api/auth/signin \
 ```
 
 **Success Response (200):**
+
 ```json
 {
   "message": "Sign-in successful",
@@ -127,12 +136,14 @@ All authenticated endpoints require a valid Firebase ID token in the `Authorizat
 Retrieves the authenticated user's profile. If the user is new to the service, a new profile will be created for them upon their first authenticated request.
 
 **cURL Example:**
+
 ```bash
 curl -X GET http://localhost:3000/api/profile \
   -H "Authorization: Bearer <YOUR_FIREBASE_ID_TOKEN>"
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Welcome, <User Name>!",
@@ -151,6 +162,7 @@ curl -X GET http://localhost:3000/api/profile \
 Updates the authenticated user's profile. Only `name` and `bio` fields can be updated.
 
 **cURL Example:**
+
 ```bash
 curl -X PUT http://localhost:3000/api/profile \
   -H "Content-Type: application/json" \
@@ -162,6 +174,7 @@ curl -X PUT http://localhost:3000/api/profile \
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "New User Name",
@@ -170,6 +183,7 @@ curl -X PUT http://localhost:3000/api/profile \
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Profile updated successfully",
@@ -189,15 +203,18 @@ curl -X PUT http://localhost:3000/api/profile \
 Admin endpoints require the authenticated user to have an `admin` or `super-admin` role.
 
 #### `GET /api/admin/dashboard`
+
 Retrieves data for the admin dashboard. Accessible only by users with `admin` or `super-admin` roles.
 
 **cURL Example:**
+
 ```bash
 curl -X GET http://localhost:3000/api/admin/dashboard \
   -H "Authorization: Bearer <YOUR_FIREBASE_ADMIN_ID_TOKEN>"
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Welcome to the Admin Dashboard!",
@@ -219,5 +236,5 @@ curl -X GET http://localhost:3000/api/admin/dashboard \
 * [Firebase API Reference](https://firebase.google.com/docs/reference/admin/node/)
 
 
-###### dpw | 2025-07-06 | 81TTlc69mvL6
+###### dpw | 2025-07-13 | 81TTlc69mvL6
 
