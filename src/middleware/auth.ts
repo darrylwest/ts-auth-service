@@ -24,9 +24,9 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     // If ID token verification fails, try to decode as custom token
     try {
       // Custom tokens are JWTs that can be decoded to get the uid
-      const decoded = jwt.decode(idToken) as any;
+      const decoded = jwt.decode(idToken) as jwt.JwtPayload | null;
       
-      if (decoded && decoded.uid) {
+      if (decoded && typeof decoded === 'object' && 'uid' in decoded && typeof decoded.uid === 'string') {
         // Get user record from Firebase Admin to verify the token is valid
         const userRecord = await admin.auth().getUser(decoded.uid);
         req.user = { uid: userRecord.uid, email: userRecord.email, emailVerified: userRecord.emailVerified };
