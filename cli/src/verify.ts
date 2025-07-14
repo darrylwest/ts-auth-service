@@ -24,7 +24,7 @@ function loadToken(userKey: string): string {
     }
     
     return userToken.idToken;
-  } catch (error) {
+  } catch (_error) {
     console.error('Error: No token file found. Please signin first.');
     process.exit(1);
   }

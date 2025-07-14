@@ -24,7 +24,7 @@ function loadAndRemoveToken(userKey: string): { token: string; uid: string } {
     writeFileSync(TOKEN_FILE, JSON.stringify(tokens, null, 2));
     
     return { token: userToken.idToken, uid: userToken.uid };
-  } catch (error) {
+  } catch (_error) {
     console.error('Error: No token file found. User may already be signed out.');
     process.exit(1);
   }
@@ -37,7 +37,7 @@ async function signout(userKey: string) {
     
     console.log(`Signing out user: ${user.name} (${user.email})`);
     
-    const response = await axios.post(`${BASE_URL}/signout`, {
+    const _response = await axios.post(`${BASE_URL}/signout`, {
       uid: uid,
       revokeRefreshTokens: true
     }, {

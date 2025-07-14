@@ -34,7 +34,7 @@ async function signin(userKey: string) {
       try {
         const existingData = readFileSync(TOKEN_FILE, 'utf-8');
         tokens = JSON.parse(existingData);
-      } catch (error) {
+      } catch (_error) {
         console.warn('Warning: Could not parse existing tokens file. Starting fresh.');
       }
     }

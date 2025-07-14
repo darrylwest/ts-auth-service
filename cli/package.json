@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "signup": "bun run src/signup.ts",
-    "signin": "bun run src/signin.ts", 
+    "signin": "bun run src/signin.ts",
     "verify": "bun run src/verify.ts",
     "verify:email": "bun run src/verify-email.ts",
-    "signout": "bun run src/signout.ts"
+    "signout": "bun run src/signout.ts",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -16,6 +18,10 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.5",
     "typescript": "^5.0.0"
   }
 }
