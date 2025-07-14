@@ -20,18 +20,23 @@ async function signin(userKey: string) {
     });
     
     console.log('Signin successful!');
-    console.log('User UID:', response.data.uid);
-    console.log('Email:', response.data.email);
+
+    console.log(JSON.stringify(response.data));
+
+    console.log('User UID:', response.data.user.uid);
+    console.log('Email:', response.data.user.email);
     
     // Store token for verify/signout operations
     const tokens = {
       [userKey]: {
-        idToken: response.data.idToken,
-        refreshToken: response.data.refreshToken,
-        uid: response.data.uid
+        idToken: response.data.token,
+        refreshToken: response.data.token,
+        uid: response.data.user.uid
       }
     };
     
+    console.log(JSON.stringify(tokens));
+
     writeFileSync(TOKEN_FILE, JSON.stringify(tokens, null, 2));
     console.log('Token saved for future operations');
     
