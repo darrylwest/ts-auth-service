@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import axios from 'axios';
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { getUser } from './utils/data-loader.js';
 
@@ -27,12 +27,23 @@ async function signin(userKey: string) {
     console.log('Email:', response.data.user.email);
     
     // Store token for verify/signout operations
-    const tokens = {
-      [userKey]: {
-        idToken: response.data.token,
-        refreshToken: response.data.token,
-        uid: response.data.user.uid
+    let tokens = {};
+    
+    // Load existing tokens if file exists
+    if (existsSync(TOKEN_FILE)) {
+      try {
+        const existingData = readFileSync(TOKEN_FILE, 'utf-8');
+        tokens = JSON.parse(existingData);
+      } catch (error) {
+        console.warn('Warning: Could not parse existing tokens file. Starting fresh.');
       }
+    }
+    
+    // Add/update the current user's tokens
+    tokens[userKey] = {
+      idToken: response.data.token,
+      refreshToken: response.data.token,
+      uid: response.data.user.uid
     };
     
     console.log(JSON.stringify(tokens));
