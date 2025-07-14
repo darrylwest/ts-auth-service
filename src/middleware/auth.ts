@@ -16,7 +16,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
   try {
     // First try to verify as ID token
     const decodedToken = await admin.auth().verifyIdToken(idToken);
-    req.user = { uid: decodedToken.uid, email: decodedToken.email };
+    req.user = { uid: decodedToken.uid, email: decodedToken.email, emailVerified: decodedToken.email_verified };
     console.log(JSON.stringify(req.user));
     next();
     return;
@@ -29,7 +29,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       if (decoded && decoded.uid) {
         // Get user record from Firebase Admin to verify the token is valid
         const userRecord = await admin.auth().getUser(decoded.uid);
-        req.user = { uid: userRecord.uid, email: userRecord.email };
+        req.user = { uid: userRecord.uid, email: userRecord.email, emailVerified: userRecord.emailVerified };
         console.log(JSON.stringify(req.user));
         next();
         return;

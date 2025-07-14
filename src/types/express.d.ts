@@ -5,6 +5,7 @@ declare global {
       user?: {
         uid: string;
         email?: string;
+        emailVerified?: boolean;
       };
     }
   }

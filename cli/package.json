@@ -7,6 +7,7 @@
     "signup": "bun run src/signup.ts",
     "signin": "bun run src/signin.ts", 
     "verify": "bun run src/verify.ts",
+    "verify:email": "bun run src/verify-email.ts",
     "signout": "bun run src/signout.ts"
   },
   "dependencies": {

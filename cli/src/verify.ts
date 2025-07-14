@@ -43,10 +43,12 @@ async function verify(userKey: string) {
       }
     });
     
+    console.log(JSON.stringify(response.data, null, 2));
+
     console.log('Token verification successful!');
-    console.log('User UID:', response.data.uid);
-    console.log('Email:', response.data.email);
-    console.log('Email verified:', response.data.emailVerified);
+    console.log('User UID:', response.data.user.uid);
+    console.log('Email:', response.data.user.email);
+    console.log('Email verified:', response.data.user.emailVerified);
     
   } catch (error) {
     if (axios.isAxiosError(error)) {

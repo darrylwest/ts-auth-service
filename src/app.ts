@@ -164,6 +164,34 @@ export default function createApp() {
     });
   });
 
+  // Set email verified status
+  app.patch('/api/auth/verify-email', authMiddleware, async (req: Request, res: Response) => {
+    const { emailVerified }: { emailVerified: boolean } = req.body;
+    const uid = req.user!.uid;
+
+    // Input validation
+    if (typeof emailVerified !== 'boolean') {
+      res.status(400).json({ error: 'emailVerified must be a boolean value.' });
+      return;
+    }
+
+    try {
+      await admin.auth().updateUser(uid, {
+        emailVerified: emailVerified
+      });
+
+      logger.info('Email verification status updated', { uid, emailVerified });
+
+      res.status(200).json({
+        message: 'Email verification status updated',
+        emailVerified
+      });
+    } catch (error) {
+      logger.error('Error updating email verification status:', error);
+      res.status(500).json({ error: 'Failed to update email verification status.' });
+    }
+  });
+
   // Sign-out route
   app.post('/api/auth/signout', authMiddleware, async (req: Request, res: Response) => {
     const { revokeAllTokens }: { revokeAllTokens?: boolean } = req.body;
