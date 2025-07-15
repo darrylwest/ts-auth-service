@@ -27,7 +27,7 @@ async function signin(userKey: string) {
     console.log('Email:', response.data.user.email);
     
     // Store token for verify/signout operations
-    let tokens = {};
+    let tokens: { [key: string]: { idToken: string; refreshToken: string; uid: string } } = {};
     
     // Load existing tokens if file exists
     if (existsSync(TOKEN_FILE)) {
