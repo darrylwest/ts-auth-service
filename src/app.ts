@@ -177,14 +177,14 @@ export default function createApp() {
 
     try {
       await admin.auth().updateUser(uid, {
-        emailVerified: emailVerified
+        emailVerified: emailVerified,
       });
 
       logger.info('Email verification status updated', { uid, emailVerified });
 
       res.status(200).json({
         message: 'Email verification status updated',
-        emailVerified
+        emailVerified,
       });
     } catch (error) {
       logger.error('Error updating email verification status:', error);

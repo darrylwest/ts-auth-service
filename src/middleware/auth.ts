@@ -25,7 +25,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     try {
       // Custom tokens are JWTs that can be decoded to get the uid
       const decoded = jwt.decode(idToken) as jwt.JwtPayload | null;
-      
+
       if (decoded && typeof decoded === 'object' && 'uid' in decoded && typeof decoded.uid === 'string') {
         // Get user record from Firebase Admin to verify the token is valid
         const userRecord = await admin.auth().getUser(decoded.uid);
@@ -37,7 +37,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     } catch (customTokenError) {
       logger.error('Error verifying custom token:', customTokenError);
     }
-    
+
     logger.error('Error verifying auth token:', error);
     res.status(403).send({ error: 'Forbidden: Invalid token.' });
     return;
