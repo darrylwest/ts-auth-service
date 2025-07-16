@@ -13,10 +13,9 @@ function loadToken(userKey: string): string {
     const data = readFileSync(TOKEN_FILE, 'utf-8');
     const tokens = JSON.parse(data);
 
-    console.log(JSON.stringify(tokens, null, 2));
+    // console.log(JSON.stringify(tokens, null, 2));
 
     const userToken = tokens[userKey];
-
     
     if (!userToken || !userToken.idToken) {
       console.error(`Error: No token found for user '${userKey}'. Please signin first.`);

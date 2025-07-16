@@ -39,9 +39,10 @@ Data File:
 
 Command Line use:
 
-* signup.ts dpw 
+* signup.ts dpw
 * signin.ts dpw
 * verify.ts dpw
+* verify-email.ts dpw true
 * signout.ts dpw
 
 If the name is missing or not found, it outputs an error message.
