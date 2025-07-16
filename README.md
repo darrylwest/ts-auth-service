@@ -229,6 +229,12 @@ curl -X GET http://localhost:3000/api/admin/dashboard \
 }
 ```
 
+## Typescript CLI Scripts
+
+Under the cli folder is a small project that implements all the services calls using Typescript. This should be used as examples of how Axios calls are impemented.
+
+[The CLI Readme](cli/README.md)
+
 
 ## References
 
