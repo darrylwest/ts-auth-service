@@ -41,7 +41,7 @@ function createMockToken(uid: string, email?: string, emailVerified?: boolean): 
       aud: 'mock-auth-service',
       exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiration
     },
-    JWT_SECRET
+    JWT_SECRET,
   );
 }
 
@@ -56,7 +56,7 @@ export async function mockAuthMiddleware(req: Request, res: Response, next: expr
   const token = authHeader.split('Bearer ')[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
     req.user = {
       uid: decoded.uid,
       email: decoded.email,
@@ -107,7 +107,7 @@ export default function createMockApp() {
     const normalizedEmail = email.toLowerCase();
 
     // Check if user already exists
-    const existingUser = Array.from(mockUsers.values()).find(u => u.email === normalizedEmail);
+    const existingUser = Array.from(mockUsers.values()).find((u) => u.email === normalizedEmail);
     if (existingUser) {
       res.status(409).json({ error: 'Email already exists.' });
       return;
@@ -160,7 +160,7 @@ export default function createMockApp() {
 
     // Find user by email and verify password
     const user = Array.from(mockUsers.values()).find(
-      u => u.email === normalizedEmail && u.password === hashedPassword
+      (u) => u.email === normalizedEmail && u.password === hashedPassword,
     );
 
     if (!user) {
@@ -237,7 +237,7 @@ export default function createMockApp() {
 
   // Mock-specific route to list all users (development only)
   app.get('/api/mock/users', (req: Request, res: Response) => {
-    const users = Array.from(mockUsers.values()).map(u => ({
+    const users = Array.from(mockUsers.values()).map((u) => ({
       uid: u.uid,
       email: u.email,
       displayName: u.displayName,
