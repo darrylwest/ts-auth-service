@@ -4,7 +4,7 @@
 # Creates a new user account with unique email
 
 # Configuration
-BASE_URL="${BASE_URL:-http://localhost:3001}"
+BASE_URL="${BASE_URL:-http://localhost:3901}"
 ENDPOINT="/api/auth/signup"
 
 # Colors for output

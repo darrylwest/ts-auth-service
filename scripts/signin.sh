@@ -4,7 +4,7 @@
 # Authenticates user and retrieves token
 
 # Configuration
-BASE_URL="${BASE_URL:-http://localhost:3001}"
+BASE_URL="${BASE_URL:-http://localhost:3901}"
 ENDPOINT="/api/auth/signin"
 
 # Colors for output

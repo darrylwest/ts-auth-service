@@ -41,7 +41,7 @@ This directory contains curl-based scripts for testing the authentication API en
 
 ### Environment Variables
 
-- `BASE_URL` - API base URL (default: http://localhost:3001)
+- `BASE_URL` - API base URL (default: http://localhost:3901)
 - `TEST_EMAIL` - Override test email for signin/signout
 - `TEST_PASSWORD` - Override test password for signin
 - `TOKEN` - Override token for signout

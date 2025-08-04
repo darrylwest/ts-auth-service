@@ -4,7 +4,7 @@
 # Tests server connectivity and health
 
 # Configuration
-BASE_URL="${BASE_URL:-http://localhost:3001}"
+BASE_URL="${BASE_URL:-http://localhost:3901}"
 ENDPOINT="/api/ping"
 
 # Colors for output

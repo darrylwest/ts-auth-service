@@ -4,7 +4,7 @@
 # Signs out authenticated user with optional token revocation
 
 # Configuration
-BASE_URL="${BASE_URL:-http://localhost:3001}"
+BASE_URL="${BASE_URL:-http://localhost:3901}"
 ENDPOINT="/api/auth/signout"
 
 # Colors for output

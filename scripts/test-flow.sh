@@ -4,7 +4,7 @@
 # Tests ping -> signup -> signin -> signout -> cleanup
 
 # Configuration
-BASE_URL="${BASE_URL:-http://localhost:3001}"
+BASE_URL="${BASE_URL:-http://localhost:3901}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
@@ -89,28 +89,34 @@ if ! run_script "signin.sh" "User signin"; then
     overall_success=false
 fi
 
-# Test 4: Signout (regular)
-print_section "4. TESTING USER SIGNOUT (REGULAR)"
+# Test 4: Verify token
+print_section "4. TESTING TOKEN VERIFICATION"
+if ! run_script "verify.sh" "Token verification"; then
+    overall_success=false
+fi
+
+# Test 5: Signout (regular)
+print_section "5. TESTING USER SIGNOUT (REGULAR)"
 if ! run_script "signout.sh" "User signout"; then
     overall_success=false
 fi
 
-# Test 5: Signin again for token revocation test
-print_section "5. TESTING SIGNIN AGAIN FOR TOKEN REVOCATION"
+# Test 6: Signin again for token revocation test
+print_section "6. TESTING SIGNIN AGAIN FOR TOKEN REVOCATION"
 if ! run_script "signin.sh" "User signin (for revocation test)"; then
     overall_success=false
 fi
 
-# Test 6: Signout with token revocation
-print_section "6. TESTING USER SIGNOUT (WITH TOKEN REVOCATION)"
+# Test 7: Signout with token revocation
+print_section "7. TESTING USER SIGNOUT (WITH TOKEN REVOCATION)"
 export REVOKE_TOKENS=true
 if ! run_script "signout.sh" "User signout with token revocation"; then
     overall_success=false
 fi
 unset REVOKE_TOKENS
 
-# Test 7: Cleanup
-print_section "7. CLEANING UP TEST USER"
+# Test 8: Cleanup
+print_section "8. CLEANING UP TEST USER"
 if ! run_script "cleanup.sh" "User cleanup"; then
     overall_success=false
     echo -e "${YELLOW}Note: Cleanup failure won't fail the overall test${NC}"
@@ -127,6 +133,7 @@ if [ "$overall_success" = true ]; then
     echo "✓ Server health check (ping)"
     echo "✓ User registration (signup)"
     echo "✓ User authentication (signin)"
+    echo "✓ Token verification"
     echo "✓ User sign-out (regular)"
     echo "✓ User sign-out with token revocation"
     echo "✓ User cleanup"
