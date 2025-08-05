@@ -24,7 +24,7 @@ A public endpoint that does not require authentication. Returns a simple message
 **cURL Example:**
 
 ```bash
-curl -X GET http://localhost:3000/api/ping
+curl -s http://localhost:3901/api/ping
 ```
 
 **Response:**
@@ -41,7 +41,7 @@ Creates a new user account with email and password. This endpoint does not requi
 **cURL Example:**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/signup \
+curl -X POST http://localhost:3901/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -88,7 +88,7 @@ Authenticates a user with email and password. Returns a custom Firebase token fo
 **cURL Example:**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/signin \
+curl -X POST http://localhost:3901/api/auth/signin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -132,13 +132,14 @@ curl -X POST http://localhost:3000/api/auth/signin \
 
 All authenticated endpoints require a valid Firebase ID token in the `Authorization` header, in the format `Bearer <token>`.
 
-#### `GET /api/profile`
-Retrieves the authenticated user's profile. If the user is new to the service, a new profile will be created for them upon their first authenticated request.
+#### `GET /api/verify`
+
+Retrieves the authenticated user's profile if the user is logged in.
 
 **cURL Example:**
 
 ```bash
-curl -X GET http://localhost:3000/api/profile \
+curl -X GET http://localhost:3901/api/verify \
   -H "Authorization: Bearer <YOUR_FIREBASE_ID_TOKEN>"
 ```
 
@@ -158,45 +159,15 @@ curl -X GET http://localhost:3000/api/profile \
 }
 ```
 
-#### `PUT /api/profile`
-Updates the authenticated user's profile. Only `name` and `bio` fields can be updated.
+If the user is not found for the token, e.g., not signed in, the response is a 403 with this message:
 
-**cURL Example:**
-
-```bash
-curl -X PUT http://localhost:3000/api/profile \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <YOUR_FIREBASE_ID_TOKEN>" \
-  -d '{
-    "name": "New User Name",
-    "bio": "New biography content"
-  }'
 ```
-
-**Request Body:**
-
-```json
 {
-  "name": "New User Name",
-  "bio": "New biography content"
+  "error": "Forbidden: Invalid token"
 }
 ```
 
-**Response:**
 
-```json
-{
-  "message": "Profile updated successfully",
-  "profile": {
-    "uid": "firebase-user-id",
-    "email": "user@example.com",
-    "name": "New User Name",
-    "role": "user",
-    "bio": "New biography content",
-    "createdAt": "ISO-8601-timestamp"
-  }
-}
-```
 
 ### Admin Endpoints
 
@@ -206,28 +177,7 @@ Admin endpoints require the authenticated user to have an `admin` or `super-admi
 
 Retrieves data for the admin dashboard. Accessible only by users with `admin` or `super-admin` roles.
 
-**cURL Example:**
-
-```bash
-curl -X GET http://localhost:3000/api/admin/dashboard \
-  -H "Authorization: Bearer <YOUR_FIREBASE_ADMIN_ID_TOKEN>"
-```
-
-**Response:**
-
-```json
-{
-  "message": "Welcome to the Admin Dashboard!",
-  "adminUser": {
-    "uid": "firebase-admin-id",
-    "email": "admin@example.com",
-    "name": "Admin User",
-    "role": "admin",
-    "bio": "Admin's biography",
-    "createdAt": "ISO-8601-timestamp"
-  }
-}
-```
+**Not implemented yet**
 
 ## Typescript CLI Scripts
 
@@ -242,5 +192,5 @@ Under the cli folder is a small project that implements all the services calls u
 * [Firebase API Reference](https://firebase.google.com/docs/reference/admin/node/)
 
 
-###### dpw | 2025-07-13 | 81TTlc69mvL6
+###### dpw | 2025-08-05
 
