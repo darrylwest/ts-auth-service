@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { promises as fs } from 'fs';
+import path from 'path';
 import logger from '../config/logger';
 
 // Mock user storage
@@ -16,6 +18,12 @@ interface MockUser {
 
 // In-memory storage for mock users
 const mockUsers = new Map<string, MockUser>();
+
+// Path to persist mock users
+const MOCK_USERS_FILE = path.join(process.cwd(), 'data', 'mock-users.json');
+
+// Debounced save timer
+let saveTimer: NodeJS.Timeout | null = null;
 
 // Secret for JWT signing (in production, use env variable)
 const JWT_SECRET = process.env.JWT_SECRET || 'mock-secret-key-for-development';
@@ -43,6 +51,69 @@ function createMockToken(uid: string, email?: string, emailVerified?: boolean): 
     },
     JWT_SECRET,
   );
+}
+
+// Save mockUsers to JSON file with debouncing
+async function saveMockUsers(): Promise<void> {
+  try {
+    // Clear existing timer
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+    }
+
+    // Set new timer to save after 30 seconds
+    saveTimer = setTimeout(async () => {
+      try {
+        // Ensure data directory exists
+        const dataDir = path.dirname(MOCK_USERS_FILE);
+        await fs.mkdir(dataDir, { recursive: true });
+
+        // Convert Map to serializable object
+        const usersObject = Object.fromEntries(
+          Array.from(mockUsers.entries()).map(([uid, user]) => [
+            uid,
+            {
+              ...user,
+              createdAt: user.createdAt.toISOString(), // Convert Date to string
+            },
+          ]),
+        );
+
+        await fs.writeFile(MOCK_USERS_FILE, JSON.stringify(usersObject, null, 2));
+        logger.info('[MOCK] Users saved to file', { file: MOCK_USERS_FILE, count: mockUsers.size });
+      } catch (error) {
+        logger.error('[MOCK] Error saving users to file:', error);
+      }
+    }, 30000); // 30 seconds
+  } catch (error) {
+    logger.error('[MOCK] Error scheduling save:', error);
+  }
+}
+
+// Load mockUsers from JSON file
+async function loadMockUsers(): Promise<void> {
+  try {
+    const data = await fs.readFile(MOCK_USERS_FILE, 'utf-8');
+    const usersObject = JSON.parse(data);
+
+    // Convert back to Map with Date objects
+    mockUsers.clear();
+    for (const [uid, userData] of Object.entries(usersObject)) {
+      const user = userData as MockUser & { createdAt: string };
+      mockUsers.set(uid, {
+        ...user,
+        createdAt: new Date(user.createdAt), // Convert string back to Date
+      });
+    }
+
+    logger.info('[MOCK] Users loaded from file', { file: MOCK_USERS_FILE, count: mockUsers.size });
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      logger.info('[MOCK] No existing users file found, starting with empty user set');
+    } else {
+      logger.error('[MOCK] Error loading users from file:', error);
+    }
+  }
 }
 
 // Mock authentication middleware
@@ -125,6 +196,7 @@ export default function createMockApp() {
     };
 
     mockUsers.set(uid, mockUser);
+    saveMockUsers(); // Trigger debounced save
 
     logger.info('[MOCK] User created successfully', { uid, email: normalizedEmail });
 
@@ -211,6 +283,7 @@ export default function createMockApp() {
 
     user.emailVerified = emailVerified;
     mockUsers.set(uid, user);
+    saveMockUsers(); // Trigger debounced save
 
     logger.info('[MOCK] Email verification status updated', { uid, emailVerified });
 
@@ -252,9 +325,13 @@ export default function createMockApp() {
   app.delete('/api/mock/users', (req: Request, res: Response) => {
     const count = mockUsers.size;
     mockUsers.clear();
+    saveMockUsers(); // Trigger debounced save
     logger.info('[MOCK] All users cleared', { count });
     res.json({ message: 'All users cleared', count });
   });
 
   return app;
 }
+
+// Initialize users on module load
+loadMockUsers();
