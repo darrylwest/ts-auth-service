@@ -1,6 +1,6 @@
 {
   "name": "ts-auth-service",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Node/Typescript service that provides a Firebase authentication gateway.",
   "main": "index.js",
   "directories": {
