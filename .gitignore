@@ -3,3 +3,4 @@ errors.txt
 coverage
 dist
 *error*.txt
+data/

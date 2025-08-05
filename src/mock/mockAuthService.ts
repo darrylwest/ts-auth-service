@@ -334,4 +334,5 @@ export default function createMockApp() {
 }
 
 // Initialize users on module load
+logger.info('[MOCK] Mock auth service starting up', { dataFile: MOCK_USERS_FILE });
 loadMockUsers();
