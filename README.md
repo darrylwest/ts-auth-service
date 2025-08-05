@@ -1,6 +1,6 @@
 # Auth Service
 
-Node/Typescript service that uses Firebase for authentication while managing user profiles and role-based authorization.
+Node/Typescript service that provides a Firebase authentication gateway with Express.js API endpoints for user management and token verification.
 
 ```
  _______         __   __      _______                    __             
@@ -10,6 +10,39 @@ Node/Typescript service that uses Firebase for authentication while managing use
 ```
 
 [Implementation Plan](https://aistudio.google.com/app/prompts/1LzX-RFOvT6lvmbSHu1FoiY3bRnD2NFAC)
+
+## Security & Environment Setup
+
+This service uses **dotenvx** for secure credential management. Sensitive Firebase service account credentials are encrypted at rest.
+
+### Environment Configuration
+
+The service requires the following environment variables in your `.env` file:
+
+```bash
+# Port configuration
+PORT=3901
+
+# Authentication mode
+USE_MOCK_AUTH=true  # Set to false for production Firebase auth
+
+# JWT Secret (for mock service development only)
+JWT_SECRET=your-development-secret-key
+
+# Node environment
+NODE_ENV=development
+
+# Firebase Service Account - Sensitive Data (encrypted by dotenvx)
+FIREBASE_PRIVATE_KEY_ID=encrypted:...
+FIREBASE_PRIVATE_KEY=encrypted:...
+```
+
+### Firebase Service Account Setup
+
+1. The Firebase service account configuration uses a template in `keys/service-account.json`
+2. Sensitive credentials (private_key and private_key_id) are stored encrypted in `.env`
+3. The service automatically expands environment variables when loading the service account
+4. Use `dotenvx encrypt` to encrypt sensitive values in your `.env` file
 
 ## API Usage
 
@@ -70,9 +103,7 @@ curl -X POST http://localhost:3901/api/auth/signup \
   "user": {
     "uid": "firebase-user-id",
     "email": "user@example.com",
-    "name": "User Name",
-    "role": "user",
-    "createdAt": "ISO-8601-timestamp"
+    "name": "User Name"
   }
 }
 ```
@@ -114,8 +145,7 @@ curl -X POST http://localhost:3901/api/auth/signin \
   "user": {
     "uid": "firebase-user-id",
     "email": "user@example.com",
-    "name": "User Name",
-    "role": "user"
+    "name": "User Name"
   }
 }
 ```
@@ -123,7 +153,6 @@ curl -X POST http://localhost:3901/api/auth/signin \
 **Error Responses:**
 - `400 Bad Request`: Missing email/password or invalid email format
 - `401 Unauthorized`: Invalid email or password (user not found)
-- `404 Not Found`: User profile not found in system
 - `500 Internal Server Error`: Server error during sign-in
 
 **Note:** The returned token is a Firebase custom token that should be exchanged for an ID token on the client side using the Firebase SDK.
@@ -132,64 +161,118 @@ curl -X POST http://localhost:3901/api/auth/signin \
 
 All authenticated endpoints require a valid Firebase ID token in the `Authorization` header, in the format `Bearer <token>`.
 
-#### `GET /api/verify`
+#### `GET /api/auth/verify`
 
-Retrieves the authenticated user's profile if the user is logged in.
+Verifies the Firebase ID token and returns user information.
 
 **cURL Example:**
 
 ```bash
-curl -X GET http://localhost:3901/api/verify \
+curl -X GET http://localhost:3901/api/auth/verify \
   -H "Authorization: Bearer <YOUR_FIREBASE_ID_TOKEN>"
 ```
 
-**Response:**
+**Success Response (200):**
 
 ```json
 {
-  "message": "Welcome, <User Name>!",
-  "userProfile": {
+  "message": "Token is valid",
+  "user": {
     "uid": "firebase-user-id",
-    "email": "user@example.com",
-    "name": "User Name",
-    "role": "user",
-    "bio": "User's biography",
-    "createdAt": "ISO-8601-timestamp"
+    "email": "user@example.com"
   }
 }
 ```
 
-If the user is not found for the token, e.g., not signed in, the response is a 403 with this message:
+**Error Responses:**
+- `401 Unauthorized`: Missing or invalid authorization header
+- `403 Forbidden`: Invalid or expired Firebase token
 
+#### `PATCH /api/auth/verify-email`
+
+Updates the email verification status for the authenticated user.
+
+**cURL Example:**
+
+```bash
+curl -X PATCH http://localhost:3901/api/auth/verify-email \
+  -H "Authorization: Bearer <YOUR_FIREBASE_ID_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"emailVerified": true}'
 ```
+
+**Request Body:**
+
+```json
 {
-  "error": "Forbidden: Invalid token"
+  "emailVerified": true
 }
 ```
 
+**Success Response (200):**
 
+```json
+{
+  "message": "Email verification status updated",
+  "emailVerified": true
+}
+```
 
-### Admin Endpoints
+**Error Responses:**
+- `400 Bad Request`: Invalid emailVerified value (must be boolean)
+- `401 Unauthorized`: Missing or invalid authorization header
+- `403 Forbidden`: Invalid or expired Firebase token
+- `500 Internal Server Error`: Failed to update verification status
 
-Admin endpoints require the authenticated user to have an `admin` or `super-admin` role.
+#### `POST /api/auth/signout`
 
-#### `GET /api/admin/dashboard`
+Signs out the authenticated user with optional token revocation.
 
-Retrieves data for the admin dashboard. Accessible only by users with `admin` or `super-admin` roles.
+**cURL Example:**
 
-**Not implemented yet**
+```bash
+curl -X POST http://localhost:3901/api/auth/signout \
+  -H "Authorization: Bearer <YOUR_FIREBASE_ID_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"revokeAllTokens": true}'
+```
 
-## Typescript CLI Scripts
+**Request Body (optional):**
 
-Under the cli folder is a small project that implements all the services calls using Typescript. This should be used as examples of how Axios calls are impemented.
+```json
+{
+  "revokeAllTokens": true
+}
+```
 
-[The CLI Readme](cli/README.md)
+**Success Response (200):**
 
+```json
+{
+  "message": "Successfully signed out",
+  "revokedTokens": true
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized`: Missing or invalid authorization header
+- `403 Forbidden`: Invalid or expired Firebase token
+- `500 Internal Server Error`: Sign-out failed
+
+## Development Mode
+
+The service supports a mock authentication mode for development:
+
+- Set `USE_MOCK_AUTH=true` in your environment to use mock authentication
+- In mock mode, the service uses JWT tokens instead of Firebase authentication
+- This allows development without requiring Firebase credentials
+- Set `USE_MOCK_AUTH=false` or remove it entirely for production Firebase authentication
 
 ## References
 
 * [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
 * [Firebase API Reference](https://firebase.google.com/docs/reference/admin/node/)
+* [dotenvx - Encrypted Environment Variables](https://dotenvx.com/)
 
 
 ###### dpw | 2025-08-05
