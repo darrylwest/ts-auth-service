@@ -40,12 +40,14 @@ npm run format
 ## Architecture
 
 ### Core Components
+
 - **Firebase Integration**: Uses Firebase Admin SDK for token verification and user management
 - **Express App** (`src/app.ts`): Main application with authentication routes
 - **Authentication Middleware** (`src/middleware/auth.ts`): Verifies Firebase tokens and attaches user data to request
 - **Logging** (`src/config/logger.ts`): Winston logger with daily rotation
 
 ### Key Files
+
 - `src/app.ts`: Main Express application with Firebase auth routes
 - `src/index.ts`: Server entry point
 - `src/types/express.d.ts`: TypeScript Request interface extension
@@ -53,11 +55,13 @@ npm run format
 - `src/config/logger.ts`: Winston logger configuration
 
 ### Authentication Flow
+
 1. Client sends Firebase ID token in Authorization header
 2. `authMiddleware` verifies token with Firebase Admin SDK
 3. User data (uid, email) is attached to `req.user` for subsequent routes
 
 ### Environment Configuration
+
 - `NODE_ENV`: Controls logging level and file rotation
 - `PORT`: Server port (default: 3001)
 - Firebase service account key required in `keys/service-account.json`
@@ -65,6 +69,7 @@ npm run format
 ## Testing
 
 Tests are located in `src/__tests__/` and use Jest with ts-jest preset. Run individual test files with:
+
 ```bash
 npm test -- --testNamePattern="specific test name"
 ```
@@ -72,12 +77,14 @@ npm test -- --testNamePattern="specific test name"
 ## API Routes
 
 ### Authentication Routes
+
 - `POST /api/auth/signup` - Create new Firebase user
 - `POST /api/auth/signin` - Sign in existing user (returns custom token)
 - `POST /api/auth/signout` - Sign out user (optionally revoke refresh tokens)
 - `GET /api/auth/verify` - Verify Firebase ID token (protected route)
 
 ### Public Routes
+
 - `GET /api/ping` - Health check endpoint
 
 ## Important Notes
