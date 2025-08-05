@@ -1,16 +1,28 @@
 import express, { Request, Response } from 'express';
 import * as admin from 'firebase-admin';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import { config } from '@dotenvx/dotenvx';
 import { authMiddleware } from './middleware/auth';
 import logger from './config/logger';
+import * as fs from 'fs';
+import * as path from 'path';
 
-dotenv.config();
+config();
 
 // Initialize Firebase Admin (only once)
 if (!admin.apps.length) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const serviceAccount = require('../keys/service-account.json');
+  
+  // Read service account template and expand environment variables
+  const serviceAccountPath = path.join(__dirname, '../keys/service-account.json');
+  const serviceAccountTemplate = fs.readFileSync(serviceAccountPath, 'utf8');
+  
+  // Replace environment variable placeholders
+  const serviceAccountJson = serviceAccountTemplate
+    .replace('${FIREBASE_PRIVATE_KEY_ID}', process.env.FIREBASE_PRIVATE_KEY_ID || '')
+    .replace('${FIREBASE_PRIVATE_KEY}', (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\n/g, '\\n'));
+  
+  const serviceAccount = JSON.parse(serviceAccountJson);
+  
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
